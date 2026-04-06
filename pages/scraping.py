@@ -17,7 +17,87 @@ def render():
     raw_dir = data_dir / "raw"
     urls_file = data_dir / "article_urls.txt"
 
+    # --- Import z sitemapy ---
+    st.header("Import z sitemapy")
+    st.markdown("Pobierz URL-e artykułów z pliku sitemap.xml.")
+
+    col_sitemap_url, col_sitemap_file = st.columns(2)
+
+    with col_sitemap_url:
+        sitemap_url = st.text_input(
+            "URL sitemapy",
+            placeholder="https://example.com/sitemap.xml",
+        )
+        if st.button("📥 Pobierz z URL") and sitemap_url:
+            try:
+                import httpx
+                from xml.etree import ElementTree
+
+                resp = httpx.get(sitemap_url, timeout=15.0, follow_redirects=True)
+                resp.raise_for_status()
+                root = ElementTree.fromstring(resp.text)
+
+                ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+                locs = [loc.text for loc in root.findall(".//s:loc", ns) if loc.text]
+
+                if not locs:
+                    locs = [loc.text for loc in root.findall(".//loc") if loc.text]
+
+                locs = locs[:300]
+                st.session_state["sitemap_urls"] = locs
+                st.success(f"Znaleziono {len(locs)} URL-i")
+            except Exception as e:
+                st.error(f"Błąd: {e}")
+
+    with col_sitemap_file:
+        uploaded = st.file_uploader("Lub wgraj plik sitemap.xml", type=["xml"])
+        if uploaded:
+            try:
+                from xml.etree import ElementTree
+
+                root = ElementTree.fromstring(uploaded.read())
+                ns = {"s": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+                locs = [loc.text for loc in root.findall(".//s:loc", ns) if loc.text]
+
+                if not locs:
+                    locs = [loc.text for loc in root.findall(".//loc") if loc.text]
+
+                locs = locs[:300]
+                st.session_state["sitemap_urls"] = locs
+                st.success(f"Znaleziono {len(locs)} URL-i")
+            except Exception as e:
+                st.error(f"Błąd parsowania XML: {e}")
+
+    if "sitemap_urls" in st.session_state and st.session_state["sitemap_urls"]:
+        sitemap_locs = st.session_state["sitemap_urls"]
+        with st.expander(f"Znalezione URL-e ({len(sitemap_locs)})", expanded=False):
+            for u in sitemap_locs[:50]:
+                st.text(u)
+            if len(sitemap_locs) > 50:
+                st.caption(f"... i {len(sitemap_locs) - 50} więcej")
+
+        if st.button("➕ Dodaj do listy URL-i"):
+            existing_text = urls_file.read_text(encoding="utf-8") if urls_file.exists() else ""
+            existing_set = {
+                l.strip() for l in existing_text.splitlines()
+                if l.strip() and not l.strip().startswith("#")
+            }
+            nowe = [u for u in sitemap_locs if u not in existing_set]
+
+            if nowe:
+                dodane = "\n".join(nowe)
+                urls_file.write_text(
+                    existing_text.rstrip() + "\n" + dodane + "\n",
+                    encoding="utf-8",
+                )
+                st.success(f"Dodano {len(nowe)} nowych URL-i (pominięto {len(sitemap_locs) - len(nowe)} duplikatów)")
+                del st.session_state["sitemap_urls"]
+                st.rerun()
+            else:
+                st.info("Wszystkie URL-e już są na liście.")
+
     # --- Zarządzanie URL-ami ---
+    st.markdown("---")
     st.header("Lista URL-i")
 
     current_urls = ""

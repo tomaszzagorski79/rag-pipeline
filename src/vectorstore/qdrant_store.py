@@ -135,6 +135,55 @@ class QdrantStore:
             f"  ✓ Upsert {len(points)} punktów do '{collection_name}'"
         )
 
+    def create_dense_only_collection(self, name: str, recreate: bool = False) -> None:
+        """Utwórz kolekcję z samym wektorem dense (bez sparse).
+
+        Używane do embeddingów tytułów — nie potrzebują BM25.
+        """
+        if recreate and self.collection_exists(name):
+            self.client.delete_collection(name)
+
+        if self.collection_exists(name):
+            return
+
+        self.client.create_collection(
+            collection_name=name,
+            vectors_config=models.VectorParams(
+                size=self._dense_dim,
+                distance=models.Distance.COSINE,
+            ),
+        )
+        console.print(f"  ✓ Utworzono kolekcję (dense only): {name}")
+
+    def upsert_titles(
+        self,
+        collection_name: str,
+        titles: list[str],
+        dense_vectors: list[list[float]],
+        metadata_list: list[dict],
+    ) -> None:
+        """Wstaw tytuły z wektorami dense do kolekcji.
+
+        Args:
+            collection_name: Nazwa kolekcji.
+            titles: Lista tytułów artykułów.
+            dense_vectors: Lista wektorów dense (Jina 1024d).
+            metadata_list: Lista metadanych per tytuł (source_url, slug itp.).
+        """
+        points = []
+        for title, vec, meta in zip(titles, dense_vectors, metadata_list, strict=True):
+            point_id = str(uuid.uuid5(_UUID_NAMESPACE, title))
+            points.append(
+                models.PointStruct(
+                    id=point_id,
+                    vector=vec,
+                    payload={"title": title, **meta},
+                )
+            )
+
+        self.client.upsert(collection_name=collection_name, points=points)
+        console.print(f"  ✓ Upsert {len(points)} tytułów do '{collection_name}'")
+
     def count_points(self, collection_name: str) -> int:
         """Zwróć liczbę punktów w kolekcji."""
         info = self.client.get_collection(collection_name)

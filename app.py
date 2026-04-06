@@ -22,9 +22,10 @@ strona = st.sidebar.radio(
     [
         "Przegląd",
         "1. Scraping",
-        "2. Chunking & Indeksowanie",
-        "3. Zapytania",
-        "4. Ewaluacja RAGAS",
+        "2. Embeddingi tytułów",
+        "3. Chunking & Indeksowanie",
+        "4. Zapytania",
+        "5. Ewaluacja RAGAS",
     ],
     label_visibility="collapsed",
 )
@@ -60,14 +61,18 @@ elif strona == "1. Scraping":
     from pages import scraping
     scraping.render()
 
-elif strona == "2. Chunking & Indeksowanie":
+elif strona == "2. Embeddingi tytułów":
+    from pages import embeddingi
+    embeddingi.render()
+
+elif strona == "3. Chunking & Indeksowanie":
     from pages import chunking
     chunking.render()
 
-elif strona == "3. Zapytania":
+elif strona == "4. Zapytania":
     from pages import zapytania
     zapytania.render()
 
-elif strona == "4. Ewaluacja RAGAS":
+elif strona == "5. Ewaluacja RAGAS":
     from pages import ewaluacja
     ewaluacja.render()
