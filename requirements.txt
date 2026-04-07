@@ -19,6 +19,15 @@ ragas>=0.2.0
 streamlit>=1.35.0
 plotly>=5.20.0
 
+# Re-ranking
+flashrank>=0.2.0
+
+# Lokalne modele embeddingów (opcjonalne — benchmarki)
+# sentence-transformers>=3.0.0
+
+# OpenAI embeddings (opcjonalne — benchmarki)
+openai>=1.30.0
+
 # Narzędzia
 python-dotenv>=1.0.0
 rich>=13.0.0
