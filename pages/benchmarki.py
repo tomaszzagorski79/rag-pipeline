@@ -75,7 +75,7 @@ def render():
     from src.benchmarks.embedding_benchmark import AVAILABLE_MODELS
     import os
 
-    has_openai = bool(os.getenv("OPENAI_API_KEY"))
+    has_google = bool(os.getenv("GOOGLE_API_KEY"))
     has_st = True
     try:
         import sentence_transformers
@@ -88,10 +88,10 @@ def render():
     with col1:
         if st.checkbox("Jina v5 (API)", value=True, key="bm_jina"):
             selected_models.append("jina-v5")
-        if st.checkbox("OpenAI (API)", value=has_openai, disabled=not has_openai, key="bm_openai"):
-            selected_models.append("openai")
-            if not has_openai:
-                st.caption("Wymaga OPENAI_API_KEY w .env")
+        if st.checkbox("Google Gemini (API)", value=has_google, disabled=not has_google, key="bm_gemini"):
+            selected_models.append("gemini")
+            if not has_google:
+                st.caption("Wymaga GOOGLE_API_KEY w .env")
 
     with col2:
         if st.checkbox("multilingual-e5-large (lokalne)", value=has_st, disabled=not has_st, key="bm_e5"):

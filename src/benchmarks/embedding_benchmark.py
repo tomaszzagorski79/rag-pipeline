@@ -30,10 +30,10 @@ AVAILABLE_MODELS = {
         "name": "BAAI/bge-m3",
         "description": "BGE-M3 (lokalne, 1024d)",
     },
-    "openai": {
-        "type": "openai",
-        "name": "text-embedding-3-small",
-        "description": "OpenAI text-embedding-3-small (API, 1536d)",
+    "gemini": {
+        "type": "gemini",
+        "name": "gemini-embedding-001",
+        "description": "Google Gemini Embedding (API, 3072d)",
     },
 }
 
@@ -71,9 +71,9 @@ def _get_embedder(model_key: str):
     elif info["type"] == "local":
         from src.benchmarks.local_embedder import LocalSentenceTransformerEmbedder
         return LocalSentenceTransformerEmbedder(info["name"])
-    elif info["type"] == "openai":
-        from src.benchmarks.openai_embedder import OpenAIEmbedder
-        return OpenAIEmbedder()
+    elif info["type"] == "gemini":
+        from src.benchmarks.openai_embedder import GeminiEmbedder
+        return GeminiEmbedder()
     else:
         raise ValueError(f"Nieznany typ modelu: {info['type']}")
 

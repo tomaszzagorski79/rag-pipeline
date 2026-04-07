@@ -50,7 +50,7 @@ try:
         "QDRANT_API_KEY": bool(os.getenv("QDRANT_API_KEY")),
         "JINA_API_KEY": bool(os.getenv("JINA_API_KEY")),
         "ANTHROPIC_API_KEY": bool(os.getenv("ANTHROPIC_API_KEY")),
-        "OPENAI_API_KEY": bool(os.getenv("OPENAI_API_KEY")),
+        "GOOGLE_API_KEY": bool(os.getenv("GOOGLE_API_KEY")),
     }
     for name, ok in keys.items():
         icon = "✅" if ok else "❌"

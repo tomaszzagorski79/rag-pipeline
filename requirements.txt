@@ -25,8 +25,8 @@ flashrank>=0.2.0
 # Lokalne modele embeddingów (opcjonalne — benchmarki)
 # sentence-transformers>=3.0.0
 
-# OpenAI embeddings (opcjonalne — benchmarki)
-openai>=1.30.0
+# Google Gemini embeddings (opcjonalne — benchmarki)
+google-genai>=1.0.0
 
 # Narzędzia
 python-dotenv>=1.0.0
