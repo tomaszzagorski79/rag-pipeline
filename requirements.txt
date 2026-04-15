@@ -28,6 +28,9 @@ flashrank>=0.2.0
 # Google Gemini embeddings (opcjonalne — benchmarki)
 google-genai>=1.0.0
 
+# Neo4j (opcjonalne — Graph RAG / Hybrid / Context Engineering)
+neo4j>=5.15.0
+
 # Narzędzia
 python-dotenv>=1.0.0
 rich>=13.0.0

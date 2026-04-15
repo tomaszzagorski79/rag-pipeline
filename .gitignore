@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 data/raw/
 data/results/
+data/memory/
 *.egg-info/
 dist/
 build/

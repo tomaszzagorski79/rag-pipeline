@@ -33,6 +33,11 @@ strona = st.sidebar.radio(
         "10. Hallucination Detection",
         "11. Benchmarki embeddingów",
         "12. CRQ Scoring",
+        "13. PageIndex",
+        "14. Agentic RAG",
+        "15. Graph RAG",
+        "16. Hybrid Vector+Graph",
+        "17. Context Engineering",
     ],
     label_visibility="collapsed",
 )
@@ -112,3 +117,23 @@ elif strona == "11. Benchmarki embeddingów":
 elif strona == "12. CRQ Scoring":
     from pages import crq_scoring
     crq_scoring.render()
+
+elif strona == "13. PageIndex":
+    from pages import pageindex
+    pageindex.render()
+
+elif strona == "14. Agentic RAG":
+    from pages import agentic_rag
+    agentic_rag.render()
+
+elif strona == "15. Graph RAG":
+    from pages import graph_rag
+    graph_rag.render()
+
+elif strona == "16. Hybrid Vector+Graph":
+    from pages import hybrid_vg
+    hybrid_vg.render()
+
+elif strona == "17. Context Engineering":
+    from pages import context_eng
+    context_eng.render()
