@@ -114,14 +114,14 @@ class Neo4jStore:
             result = session.run(
                 """
                 MATCH (c:Chunk)-[:MENTIONS]->(e:Entity)
-                WHERE toLower(e.name) CONTAINS toLower($query)
+                WHERE toLower(e.name) CONTAINS toLower($search_term)
                 OPTIONAL MATCH (e)-[r:HAS_ATTRIBUTE]->(v:Value)
                 WITH c, e, collect(DISTINCT {attribute: r.name, value: v.text}) as attrs
                 RETURN c.chunk_id as chunk_id, c.text as text, c.slug as slug,
                        e.name as entity, attrs
                 LIMIT $limit
                 """,
-                query=entity_query,
+                search_term=entity_query,
                 limit=limit,
             )
             return [dict(record) for record in result]
