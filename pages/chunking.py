@@ -143,9 +143,34 @@ def render():
         "Wybierz metody chunkingu",
         AVAILABLE_METHODS,
         default=["naive", "header", "semantic"],
-        help="Każda metoda tworzy osobną kolekcję w Qdrant (np. articles_naive, articles_proposition). "
-             "Proposition wymaga wywołań Claude API (kosztowniejsze).",
+        help="Każda metoda tworzy osobną kolekcję w Qdrant (np. articles_naive, articles_proposition).",
     )
+
+    # Legenda wybranych metod
+    METHOD_INFO = {
+        "naive": "Tnie co N znaków z overlap. Baseline — szybki, bez analizy treści.",
+        "header": "Dzieli po nagłówkach H2/H3. Idealne dla artykułów SEO ze strukturą.",
+        "semantic": "Cosine similarity między zdaniami → tnie przy zmianach tematu. ⚠️ Jina API per zdanie.",
+        "proposition": "LLM rozbija na atomowe fakty (1 twierdzenie = 1 chunk). ⚠️ Claude API per fragment.",
+        "parent_child": "Małe chunki (300 zn) do szukania, cała sekcja H2 w metadata do generowania.",
+        "sentence": "Każde zdanie = osobny chunk. Najdrobniejsza granulacja.",
+        "layout_aware": "Rozpoznaje tabele, listy, nagłówki — nie tnie w środku struktury.",
+    }
+    if metody:
+        with st.expander("ℹ️ Opis wybranych metod"):
+            for m in metody:
+                desc = METHOD_INFO.get(m, "")
+                st.markdown(f"**{m}** — {desc}")
+
+    # Ostrzeżenie o kosztach API
+    kosztowne = [m for m in metody if m in ("proposition", "semantic")]
+    if kosztowne:
+        st.warning(
+            f"**Uwaga na koszty API:** Metody **{', '.join(kosztowne)}** wywołują zewnętrzne API per chunk:\n"
+            f"- **proposition** → Claude API (LLM rozbija tekst na atomowe fakty)\n"
+            f"- **semantic** → Jina API (embedding każdego zdania do analizy similarity)\n\n"
+            f"Pozostałe metody (naive, header, sentence, layout_aware, parent_child) są **darmowe** — działają czysto programatycznie, bez API."
+        )
 
     recreate = st.checkbox("Odtwórz kolekcje od nowa (usuń istniejące)", value=False,
                            help="Usuwa istniejące kolekcje i tworzy od nowa. Użyj po zmianie artykułów lub parametrów.")
