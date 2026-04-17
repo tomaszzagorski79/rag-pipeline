@@ -7,6 +7,8 @@ import sys
 _root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_root))
 
+from src.chunking.registry import AVAILABLE_METHODS
+
 
 def render():
     st.title("10. Hallucination Detection")
@@ -44,7 +46,7 @@ def _render_generate_and_verify():
         store = QdrantStore()
         qdrant_cfg = get_qdrant_config()
         dostepne = []
-        for method in ["naive", "header", "semantic"]:
+        for method in AVAILABLE_METHODS:
             name = qdrant_cfg.collection_name(method)
             if store.collection_exists(name):
                 dostepne.append(method)

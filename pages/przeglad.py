@@ -1,7 +1,11 @@
 """Strona przeglądu — status pipeline'u i szybki start."""
 
+import sys
 import streamlit as st
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from src.chunking.registry import AVAILABLE_METHODS
 
 
 def render():
@@ -44,7 +48,7 @@ def render():
         from src.vectorstore.qdrant_store import QdrantStore
         store = QdrantStore()
         qdrant_cfg = get_qdrant_config()
-        for method in ["naive", "header", "semantic"]:
+        for method in AVAILABLE_METHODS:
             name = qdrant_cfg.collection_name(method)
             if store.collection_exists(name):
                 n_collections += 1
@@ -141,7 +145,7 @@ def render():
                     store = QdrantStore()
                     qdrant_cfg = get_qdrant_config()
 
-                    for method in ["naive", "header", "semantic"]:
+                    for method in AVAILABLE_METHODS:
                         name = qdrant_cfg.collection_name(method)
                         if store.collection_exists(name):
                             store.delete_collection(name)

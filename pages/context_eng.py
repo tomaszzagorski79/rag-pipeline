@@ -7,6 +7,8 @@ import sys
 _root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_root))
 
+from src.chunking.registry import AVAILABLE_METHODS
+
 
 def render():
     st.title("17. Context Engineering")
@@ -45,7 +47,7 @@ def render():
         from src.vectorstore.qdrant_store import QdrantStore
         qdrant = QdrantStore()
         qdrant_cfg = get_qdrant_config()
-        for method in ["naive", "header", "semantic"]:
+        for method in AVAILABLE_METHODS:
             if qdrant.collection_exists(qdrant_cfg.collection_name(method)):
                 dostepne_vec.append(method)
         qdrant.close()

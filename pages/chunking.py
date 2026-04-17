@@ -21,6 +21,94 @@ def render():
 
     st.info(f"Dostępnych artykułów: {len(existing)}")
 
+    # --- Przewodnik po metodach chunkingu ---
+    with st.expander("📖 Przewodnik po wszystkich metodach chunkingu", expanded=False):
+        import pandas as pd
+        guide_data = [
+            {
+                "Metoda": "Naive (Recursive)",
+                "Jak działa": "Tnie co N znaków. Próbuje dzielić po \\n\\n, \\n, '. ', ' '.",
+                "Kiedy stosować": "Baseline, szybki start, proste FAQ",
+                "Kiedy NIE": "Tekst ze strukturą (H2/H3), tabele",
+                "Dokumenty": "Dowolne, ale bez struktury",
+                "W pipeline": "✅ naive",
+            },
+            {
+                "Metoda": "Header-based",
+                "Jak działa": "Dzieli po nagłówkach H2/H3 (naturalna struktura artykułu)",
+                "Kiedy stosować": "Artykuły SEO, blogi, dokumentacja z H2/H3",
+                "Kiedy NIE": "Tekst bez nagłówków (plain text)",
+                "Dokumenty": "Markdown, HTML z nagłówkami",
+                "W pipeline": "✅ header",
+            },
+            {
+                "Metoda": "Semantic",
+                "Jak działa": "Cosine similarity między zdaniami → tnie przy zmianach tematu",
+                "Kiedy stosować": "Tekst bez struktury, eseje, narracja",
+                "Kiedy NIE": "Spójny tematycznie tekst (1 temat = 1 gigantyczny chunk)",
+                "Dokumenty": "Dowolne, ale drogie (embedding per zdanie)",
+                "W pipeline": "✅ semantic",
+            },
+            {
+                "Metoda": "Proposition-based",
+                "Jak działa": "LLM rozbija na atomowe twierdzenia (1 fakt = 1 chunk)",
+                "Kiedy stosować": "Max precyzja, fact-checking, QA nad faktami",
+                "Kiedy NIE": "Duży korpus (drogie — LLM per fragment), narracja",
+                "Dokumenty": "Encyklopedyczne, specyfikacje, regulaminy",
+                "W pipeline": "✅ proposition",
+            },
+            {
+                "Metoda": "Parent-child (small-to-big)",
+                "Jak działa": "Małe chunki do retrieval, ale do LLM trafia CAŁY parent (sekcja H2)",
+                "Kiedy stosować": "Precyzyjne szukanie + pełny kontekst w odpowiedzi",
+                "Kiedy NIE": "Krótkie dokumenty (parent ≈ cały dokument)",
+                "Dokumenty": "Artykuły z sekcjami, dokumentacja",
+                "W pipeline": "✅ parent_child",
+            },
+            {
+                "Metoda": "Sentence-level",
+                "Jak działa": "Każde zdanie = osobny chunk",
+                "Kiedy stosować": "FAQ, krótkie odpowiedzi, granularne wyszukiwanie",
+                "Kiedy NIE": "Długie odpowiedzi (za dużo małych chunków, gubi kontekst)",
+                "Dokumenty": "FAQ, definicje, specyfikacje",
+                "W pipeline": "✅ sentence",
+            },
+            {
+                "Metoda": "Layout-aware",
+                "Jak działa": "Rozpoznaje tabele, listy, nagłówki — nie tnie w środku struktury",
+                "Kiedy stosować": "Markdown/HTML z tabelami, listami, blokami kodu",
+                "Kiedy NIE": "Czysty tekst bez formatowania",
+                "Dokumenty": "Dokumentacja techniczna, raporty z tabelami",
+                "W pipeline": "✅ layout_aware",
+            },
+            {
+                "Metoda": "Recursive (LangChain)",
+                "Jak działa": "= Naive. Próbuje \\n\\n → \\n → '. ' → ' '. To samo co naive w tym pipeline.",
+                "Kiedy stosować": "—",
+                "Kiedy NIE": "Już masz jako 'naive'",
+                "Dokumenty": "—",
+                "W pipeline": "= naive",
+            },
+            {
+                "Metoda": "Sliding window",
+                "Jak działa": "Okno przesuwa się co K tokenów = naive z overlap. Inna nazwa, ta sama logika.",
+                "Kiedy stosować": "—",
+                "Kiedy NIE": "Już masz jako 'naive' z overlap",
+                "Dokumenty": "—",
+                "W pipeline": "= naive",
+            },
+            {
+                "Metoda": "Token-based",
+                "Jak działa": "Jak naive ale liczy tokeny (nie znaki). ~4 znaki/token.",
+                "Kiedy stosować": "Kontrola context window LLM",
+                "Kiedy NIE": "Mała różnica vs znakowy — naive wystarczy",
+                "Dokumenty": "—",
+                "W pipeline": "≈ naive",
+            },
+        ]
+        df_guide = pd.DataFrame(guide_data)
+        st.dataframe(df_guide, use_container_width=True, hide_index=True, height=420)
+
     # --- Konfiguracja chunkingu ---
     st.header("Konfiguracja")
 
@@ -28,30 +116,39 @@ def render():
 
     with col1:
         st.subheader("Naive")
-        naive_size = st.number_input("Rozmiar chunka (znaki)", value=1000, step=100, key="naive_size")
-        naive_overlap = st.number_input("Overlap (znaki)", value=200, step=50, key="naive_overlap")
+        naive_size = st.number_input("Rozmiar chunka (znaki)", value=1000, step=100, key="naive_size",
+                                     help="Tekst jest cięty co N znaków — mechanicznie, bez analizy treści. Mniejszy rozmiar = więcej chunków, precyzyjniejszy retrieval, ale ryzyko przecięcia w środku zdania.")
+        naive_overlap = st.number_input("Overlap (znaki)", value=200, step=50, key="naive_overlap",
+                                        help="Ile znaków nakłada się między sąsiednimi chunkami. Zapobiega utracie kontekstu na granicy cięcia. Typowo 10-20% rozmiaru chunka (np. 100-200 przy 1000).")
 
     with col2:
         st.subheader("Header-based")
-        header_max = st.number_input("Max rozmiar sekcji", value=2000, step=200, key="header_max")
+        header_max = st.number_input("Max rozmiar sekcji", value=2000, step=200, key="header_max",
+                                     help="Dzieli tekst po nagłówkach H2/H3 — naturalna struktura artykułu. Sekcje dłuższe niż ten limit zostaną dodatkowo podzielone (jak naive, ale wewnątrz sekcji).")
         st.caption("Dzieli po H2/H3. Sekcje dłuższe niż max zostaną podzielone.")
 
     with col3:
         st.subheader("Semantic")
-        semantic_threshold = st.slider("Percentile threshold", 50, 99, 85, key="sem_thresh")
+        semantic_threshold = st.slider("Percentile threshold", 50, 99, 85, key="sem_thresh",
+                                       help="Chunker liczy cosine similarity między sąsiednimi zdaniami i tnie tam gdzie similarity spada. Percentile 85 = tnie tylko 15% najostrzejszych spadków (zmian tematu). Wyższy = mniej cięć = większe chunki.")
         st.caption("Wyższy = mniej chunków (łączy podobne zdania).")
 
     # --- Wybór metod ---
     st.markdown("---")
     st.header("Indeksowanie")
 
+    from src.chunking.registry import AVAILABLE_METHODS
+
     metody = st.multiselect(
         "Wybierz metody chunkingu",
-        ["naive", "header", "semantic"],
+        AVAILABLE_METHODS,
         default=["naive", "header", "semantic"],
+        help="Każda metoda tworzy osobną kolekcję w Qdrant (np. articles_naive, articles_proposition). "
+             "Proposition wymaga wywołań Claude API (kosztowniejsze).",
     )
 
-    recreate = st.checkbox("Odtwórz kolekcje od nowa (usuń istniejące)", value=False)
+    recreate = st.checkbox("Odtwórz kolekcje od nowa (usuń istniejące)", value=False,
+                           help="Usuwa istniejące kolekcje i tworzy od nowa. Użyj po zmianie artykułów lub parametrów.")
 
     # --- Status kolekcji ---
     try:
@@ -62,7 +159,7 @@ def render():
         qdrant_cfg = get_qdrant_config()
 
         cols = st.columns(3)
-        for i, method in enumerate(["naive", "header", "semantic"]):
+        for i, method in enumerate(AVAILABLE_METHODS):
             name = qdrant_cfg.collection_name(method)
             with cols[i]:
                 if store.collection_exists(name):
@@ -184,7 +281,7 @@ def render():
         format_func=lambda p: p.name,
         key="preview_article",
     )
-    preview_method = st.radio("Metoda", ["naive", "header", "semantic"], horizontal=True, key="preview_method")
+    preview_method = st.radio("Metoda", AVAILABLE_METHODS, horizontal=True, key="preview_method")
 
     if st.button("Pokaż chunki"):
         from config.settings import ChunkingConfig

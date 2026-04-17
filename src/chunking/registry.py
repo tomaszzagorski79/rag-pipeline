@@ -18,16 +18,12 @@ def get_chunker(
     """Zwraca chunker po nazwie.
 
     Args:
-        nazwa: 'naive', 'header' lub 'semantic'.
+        nazwa: Nazwa metody chunkingu.
         config: Opcjonalna konfiguracja chunkingu.
         embeddings: Obiekt LangChain Embeddings (wymagany dla 'semantic').
 
     Returns:
         Instancja ChunkerBase.
-
-    Raises:
-        ValueError: Gdy nazwa jest nieznana.
-        ValueError: Gdy brak embeddings dla 'semantic'.
     """
     cfg = config or get_chunking_config()
 
@@ -42,36 +38,27 @@ def get_chunker(
                 "(np. JinaEmbeddingsLangChain)."
             )
         return SemanticChunkerWrapper(embeddings=embeddings, config=cfg)
+    elif nazwa == "proposition":
+        from src.chunking.proposition import PropositionChunker
+        return PropositionChunker()
+    elif nazwa == "parent_child":
+        from src.chunking.parent_child import ParentChildChunker
+        return ParentChildChunker(cfg)
+    elif nazwa == "sentence":
+        from src.chunking.sentence import SentenceChunker
+        return SentenceChunker()
+    elif nazwa == "layout_aware":
+        from src.chunking.layout_aware import LayoutAwareChunker
+        return LayoutAwareChunker()
     else:
         raise ValueError(
             f"Nieznana metoda chunkingu: '{nazwa}'. "
-            f"Dostępne: naive, header, semantic."
+            f"Dostępne: {AVAILABLE_METHODS}"
         )
 
 
-def get_all_chunkers(
-    config: ChunkingConfig | None = None,
-    embeddings=None,
-) -> dict[str, ChunkerBase]:
-    """Zwraca słownik wszystkich dostępnych chunkerów.
-
-    Args:
-        config: Opcjonalna konfiguracja chunkingu.
-        embeddings: Obiekt LangChain Embeddings (wymagany dla 'semantic').
-
-    Returns:
-        dict[str, ChunkerBase] np. {'naive': NaiveChunker(...), ...}
-    """
-    chunkers = {
-        "naive": get_chunker("naive", config),
-        "header": get_chunker("header", config),
-    }
-
-    if embeddings is not None:
-        chunkers["semantic"] = get_chunker("semantic", config, embeddings)
-
-    return chunkers
-
-
 # Lista dostępnych metod
-AVAILABLE_METHODS = ["naive", "header", "semantic"]
+AVAILABLE_METHODS = [
+    "naive", "header", "semantic",
+    "proposition", "parent_child", "sentence", "layout_aware",
+]

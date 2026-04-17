@@ -8,6 +8,8 @@ import sys
 _root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_root))
 
+from src.chunking.registry import AVAILABLE_METHODS
+
 
 def render():
     st.title("4. Ewaluacja RAGAS")
@@ -102,7 +104,7 @@ def render():
 
         store = QdrantStore()
         qdrant_cfg = get_qdrant_config()
-        for method in ["naive", "header", "semantic"]:
+        for method in AVAILABLE_METHODS:
             name = qdrant_cfg.collection_name(method)
             if store.collection_exists(name):
                 dostepne.append(method)

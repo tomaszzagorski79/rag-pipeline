@@ -7,6 +7,8 @@ import sys
 _root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_root))
 
+from src.chunking.registry import AVAILABLE_METHODS
+
 
 def render():
     st.title("18. RAG-Fusion")
@@ -40,7 +42,7 @@ def render():
         from src.vectorstore.qdrant_store import QdrantStore
         store = QdrantStore()
         qdrant_cfg = get_qdrant_config()
-        dostepne = [m for m in ["naive", "header", "semantic"]
+        dostepne = [m for m in AVAILABLE_METHODS
                     if store.collection_exists(qdrant_cfg.collection_name(m))]
         store.close()
     except Exception as e:
