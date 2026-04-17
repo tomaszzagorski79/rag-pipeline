@@ -20,8 +20,16 @@ def render():
 **Dlaczego działa lepiej?** Hipoteza wygląda jak dokument (długi, ekspercki tekst),
 więc embedding hipotezy jest bliższy embeddingom chunków niż embedding krótkiego pytania.
 
-**Kiedy HyDE wygrywa:** złożone pytania, pytania wymagające kontekstu.
-**Kiedy przegrywa:** proste pytania faktograficzne (np. "jaka stawka VAT w Niemczech?").
+---
+**Kiedy używać:**
+- Zapytania eksploracyjne, research ("Co warto wiedzieć o cross-border?")
+- Nowe domeny bez labeled data
+- Query-document gap (pytanie krótkie, odpowiedź długa)
+
+**Kiedy NIE używać:**
+- Pytania o precyzyjne fakty/liczby (HyDE halucynuje wartości — Recall@5 = 0.544 vs 0.587 dense)
+- Wymagana niska latencja (dodatkowe wywołanie LLM)
+- Domeny fact-heavy: finanse, medycyna, prawo
         """)
 
     # Sprawdź kolekcje
@@ -47,11 +55,14 @@ więc embedding hipotezy jest bliższy embeddingom chunków niż embedding krót
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        metoda = st.selectbox("Kolekcja", dostepne, key="hyde_method")
+        metoda = st.selectbox("Kolekcja", dostepne, key="hyde_method",
+                              help="Kolekcja chunków do przeszukania")
     with col2:
-        top_k = st.number_input("Top-K", value=5, min_value=1, max_value=20, key="hyde_topk")
+        top_k = st.number_input("Top-K", value=5, min_value=1, max_value=20, key="hyde_topk",
+                                help="Ile wyników zwrócić z każdego typu search")
 
-    query = st.text_input("Zapytanie", placeholder="Np. Jak zacząć sprzedaż cross-border?", key="hyde_query")
+    query = st.text_input("Zapytanie", placeholder="Np. Jak zacząć sprzedaż cross-border?", key="hyde_query",
+                          help="Pytanie — Claude wygeneruje hipotetyczną odpowiedź i porówna z standardowym search")
 
     if st.button("🧪 Generuj HyDE i porównaj", type="primary", disabled=not query):
         from src.hyde.hyde_generator import HyDEGenerator

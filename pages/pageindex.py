@@ -48,6 +48,18 @@ po tym drzewie jak ekspert: "Gdzie szukałby odpowiedzi na to pytanie?"
 2. Query-time: Claude dostaje drzewo (tytuły+streszczenia) → wybiera node_id
 3. System pobiera pełny tekst TYLKO z wybranych sekcji
 4. Claude generuje odpowiedź
+
+---
+**Kiedy używać:**
+- Długie, dobrze ustrukturyzowane dokumenty (raporty, umowy, podręczniki)
+- Potrzebujesz pełnej wyjaśnialności (wiesz dokładnie które sekcje użyte)
+- Cross-references w dokumencie ("patrz sekcja 5.3")
+- Branże regulowane (audit trail)
+
+**Kiedy NIE używać:**
+- Duży korpus (>100 dokumentów) — PageIndex działa wewnątrz dokumentu, nie między nimi
+- Krótkie dokumenty (<5 sekcji) — overhead budowy drzewa nie opłaca się
+- Wymagana niska latencja (2-3 wywołania LLM per query)
         """)
 
     raw_dir = _root / "data" / "raw"

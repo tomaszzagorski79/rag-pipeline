@@ -20,6 +20,16 @@ porównuje wektory. Szybki, ale płytki.
 Wolniejszy, ale znacznie dokładniejszy. Decyduje, który fragment jest NAJLEPSZY.
 
 **Flow:** Hybrid search → top-20 kandydatów → Cross-encoder re-ranking → top-5 wyników.
+
+---
+**Kiedy używać:**
+- Masz dużo chunków i chcesz precyzyjniejszy ranking
+- Pytania faktograficzne z konkretnymi terminami
+- Zawsze jako pierwszy upgrade do Naive RAG (+39% Recall@5 wg T2-RAGBench)
+
+**Kiedy NIE używać:**
+- Bardzo mała baza (<50 chunków) — poprawa minimalna
+- Wymagana ultra-niska latencja — cross-encoder dodaje ~200ms
         """)
 
     # Sprawdź kolekcje
@@ -46,13 +56,17 @@ Wolniejszy, ale znacznie dokładniejszy. Decyduje, który fragment jest NAJLEPSZ
     # Konfiguracja
     col1, col2, col3 = st.columns([3, 1, 1])
     with col1:
-        metoda = st.selectbox("Kolekcja", dostepne, key="rr_method")
+        metoda = st.selectbox("Kolekcja", dostepne, key="rr_method",
+                              help="Kolekcja Qdrant z chunkami (naive/header/semantic)")
     with col2:
-        prefetch = st.number_input("Prefetch (kandydaci)", value=20, min_value=5, max_value=50, key="rr_prefetch")
+        prefetch = st.number_input("Prefetch (kandydaci)", value=20, min_value=5, max_value=50, key="rr_prefetch",
+                                   help="Ile chunków pobrać z hybrid search PRZED re-rankingiem")
     with col3:
-        top_k = st.number_input("Top-K po re-rankingu", value=5, min_value=1, max_value=20, key="rr_topk")
+        top_k = st.number_input("Top-K po re-rankingu", value=5, min_value=1, max_value=20, key="rr_topk",
+                                help="Ile najlepszych chunków zostawić PO re-rankingu")
 
-    query = st.text_input("Zapytanie", placeholder="Np. Jakie są stawki VAT w UE?", key="rr_query")
+    query = st.text_input("Zapytanie", placeholder="Np. Jakie są stawki VAT w UE?", key="rr_query",
+                          help="Pytanie które zostanie wyszukane i re-rankowane")
 
     if st.button("🔍 Szukaj i re-rankuj", type="primary", disabled=not query):
         from src.retrieval.hybrid_search import HybridRetriever

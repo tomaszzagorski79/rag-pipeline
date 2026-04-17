@@ -49,11 +49,14 @@ def render():
             "Porównaj metody",
             [m for m, _ in dostepne_metody],
             default=[m for m, _ in dostepne_metody],
+            help="Które metody chunkingu porównać (naive/header/semantic)",
         )
     with col2:
-        top_k = st.number_input("Top-K kontekstów", min_value=1, max_value=20, value=5)
+        top_k = st.number_input("Top-K kontekstów", min_value=1, max_value=20, value=5,
+                                help="Ile najlepszych chunków pobrać z hybrid search (BM25+vector+RRF)")
     with col3:
-        min_score = st.slider("Min score", 0.0, 1.0, 0.0, 0.05, help="Pokaż tylko chunki z score powyżej tego progu")
+        min_score = st.slider("Min score", 0.0, 1.0, 0.0, 0.05,
+                              help="Filtruj chunki poniżej tego score. 0 = pokaż wszystkie.")
 
     # --- Pytanie ---
     query = st.text_input(

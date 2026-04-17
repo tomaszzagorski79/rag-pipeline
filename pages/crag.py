@@ -22,6 +22,16 @@ słabe wyniki. Efekt: halucynacje.
 3. Jeśli nadal za niski → **odmawia odpowiedzi** zamiast halucynować
 
 **UWAGA:** Score RRF (Qdrant) to ~0.01-0.08, nie 0-1 jak cosine similarity.
+
+---
+**Kiedy używać:**
+- Jakość źródeł niestabilna (mieszanka dobrych i słabych artykułów)
+- Krytyczne zastosowania gdzie halucynacja = problem (finanse, prawo)
+- Gdy chcesz "fail gracefully" — odmowa lepiej niż bzdury
+
+**Kiedy NIE używać:**
+- Dobra jakość indeksu (hybrid+rerank daje lepszy Recall@5 = 0.816 vs CRAG 0.658)
+- Wymagana niska latencja (reformulacja = dodatkowe wywołanie LLM)
         """)
 
     # Sprawdź kolekcje
@@ -48,13 +58,17 @@ słabe wyniki. Efekt: halucynacje.
     # Konfiguracja
     col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
     with col1:
-        metoda = st.selectbox("Kolekcja", dostepne, key="crag_method")
+        metoda = st.selectbox("Kolekcja", dostepne, key="crag_method",
+                              help="Kolekcja Qdrant z chunkami")
     with col2:
-        threshold = st.number_input("Próg score", value=0.02, min_value=0.001, max_value=1.0, step=0.005, format="%.3f", key="crag_thresh")
+        threshold = st.number_input("Próg score", value=0.02, min_value=0.001, max_value=1.0, step=0.005, format="%.3f", key="crag_thresh",
+                                    help="Minimalny score RRF żeby zaakceptować wyniki (RRF: ~0.01-0.08)")
     with col3:
-        max_retries = st.number_input("Max prób", value=1, min_value=0, max_value=3, key="crag_retries")
+        max_retries = st.number_input("Max prób", value=1, min_value=0, max_value=3, key="crag_retries",
+                                      help="Ile razy przeformułować pytanie gdy wyniki poniżej progu")
     with col4:
-        top_k = st.number_input("Top-K", value=5, min_value=1, max_value=20, key="crag_topk")
+        top_k = st.number_input("Top-K", value=5, min_value=1, max_value=20, key="crag_topk",
+                                help="Ile kontekstów pobrać przy każdej próbie")
 
     query = st.text_input("Zapytanie", key="crag_query")
 

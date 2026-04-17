@@ -38,6 +38,11 @@ strona = st.sidebar.radio(
         "15. Graph RAG",
         "16. Hybrid Vector+Graph",
         "17. Context Engineering",
+        "18. RAG-Fusion",
+        "19. FLARE",
+        "20. RAPTOR",
+        "21. Speculative RAG",
+        "22. Decision Framework",
     ],
     label_visibility="collapsed",
 )
@@ -137,3 +142,23 @@ elif strona == "16. Hybrid Vector+Graph":
 elif strona == "17. Context Engineering":
     from pages import context_eng
     context_eng.render()
+
+elif strona == "18. RAG-Fusion":
+    from pages import rag_fusion
+    rag_fusion.render()
+
+elif strona == "19. FLARE":
+    from pages import flare
+    flare.render()
+
+elif strona == "20. RAPTOR":
+    from pages import raptor
+    raptor.render()
+
+elif strona == "21. Speculative RAG":
+    from pages import speculative
+    speculative.render()
+
+elif strona == "22. Decision Framework":
+    from pages import decision_framework
+    decision_framework.render()

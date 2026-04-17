@@ -27,6 +27,16 @@ def render():
 - Vector: znajduje chunki o płatnościach (semantycznie)
 - Graph: znajduje chunki linkowane do encji "Niemcy" i "płatności"
 - Synteza: pełniejszy kontekst niż pojedyncze źródło.
+
+---
+**Kiedy używać:**
+- Potrzebujesz ZARÓWNO semantyki (co znaczy pytanie) JAK I relacji (kto z kim)
+- E-commerce: produkt + kategoria + marka + atrybuty
+- Gdy vector-only lub graph-only nie daje pełnych odpowiedzi
+
+**Kiedy NIE używać:**
+- Jedna baza wystarczy (sprawdź RAGAS najpierw)
+- Brak Neo4j / graf pusty
         """)
 
     # Sprawdź Qdrant

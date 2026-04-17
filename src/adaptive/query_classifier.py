@@ -9,7 +9,10 @@ import anthropic
 from config.settings import get_claude_config
 
 CLASSIFY_PROMPT = """Sklasyfikuj poniższe pytanie pod kątem złożoności wyszukiwania.
-Odpowiedz JEDNYM słowem: SIMPLE, MEDIUM lub COMPLEX.
+Odpowiedz JEDNYM słowem: NO_RETRIEVAL, SIMPLE, MEDIUM lub COMPLEX.
+
+NO_RETRIEVAL — ogólna wiedza, definicje, pytania na które LLM odpowie bez bazy wiedzy.
+  Przykłady: "Co to jest SEO?", "Wyjaśnij czym jest e-commerce", "Co to jest API?"
 
 SIMPLE — proste pytanie faktograficzne, jedno pojęcie, krótka odpowiedź.
   Przykłady: "Jaka stawka VAT w Niemczech?", "Co to jest cross-border?"
@@ -51,7 +54,9 @@ class QueryClassifier:
         )
         raw = response.content[0].text.strip().upper()
 
-        if "SIMPLE" in raw:
+        if "NO_RETRIEVAL" in raw or "NO RETRIEVAL" in raw:
+            return "no_retrieval"
+        elif "SIMPLE" in raw:
             return "simple"
         elif "COMPLEX" in raw:
             return "complex"

@@ -23,6 +23,16 @@ Proste pytanie nie potrzebuje HyDE + re-ranking. Złożone pytanie potrzebuje wi
 
 Claude klasyfikuje pytanie i wybiera optymalną ścieżkę.
 Oszczędność: 30-50% mniej wywołań API przy prostych pytaniach.
+
+---
+**Kiedy używać:**
+- Zróżnicowane zapytania użytkowników (od prostych do złożonych)
+- Optymalizacja kosztów API (proste pytania nie płacą za HyDE+rerank)
+- Systemy produkcyjne z dużym wolumenem
+
+**Kiedy NIE używać:**
+- Wszystkie pytania mają podobną złożoność
+- Potrzebujesz deterministycznego pipeline (classifier może się pomylić)
         """)
 
     # Sprawdź kolekcje
@@ -48,12 +58,14 @@ Oszczędność: 30-50% mniej wywołań API przy prostych pytaniach.
 
     col1, col2 = st.columns([3, 1])
     with col1:
-        metoda = st.selectbox("Kolekcja", dostepne, key="adaptive_method")
+        metoda = st.selectbox("Kolekcja", dostepne, key="adaptive_method",
+                              help="Kolekcja Qdrant do przeszukania")
     with col2:
         override = st.selectbox(
             "Override klasyfikacji",
-            ["auto", "simple", "medium", "complex"],
+            ["auto", "no_retrieval", "simple", "medium", "complex"],
             key="adaptive_override",
+            help="Auto = Claude klasyfikuje. Override = wymuś konkretną ścieżkę.",
         )
 
     query = st.text_input("Zapytanie", key="adaptive_query")

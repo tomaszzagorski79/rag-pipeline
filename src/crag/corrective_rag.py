@@ -16,6 +16,16 @@ Zwróć TYLKO przeformułowane pytanie, bez wyjaśnień.
 Oryginalne pytanie: {query}
 """
 
+KNOWLEDGE_STRIP_PROMPT = """Wyciągnij TYLKO zdania które są bezpośrednio relevantne dla pytania.
+Odrzuć zdania ogólne, wstępy, powtórzenia.
+
+Pytanie: {query}
+
+Tekst do filtracji:
+{text}
+
+Zwróć TYLKO relevantne zdania (każde w nowej linii), bez numeracji:"""
+
 
 @dataclass
 class CRAGStep:
@@ -63,6 +73,32 @@ class CorrectiveRAG:
         self._generator = generator or ClaudeGenerator()
         self._threshold = score_threshold
         self._max_retries = max_retries
+        self._use_knowledge_strip = True
+
+    def _knowledge_strip(self, query: str, texts: list[str]) -> list[str]:
+        """Knowledge strip — filtracja chunków do samych relevantnych zdań."""
+        import anthropic
+        from config.settings import get_claude_config
+
+        cfg = get_claude_config()
+        client = anthropic.Anthropic(api_key=cfg.api_key)
+
+        stripped = []
+        for text in texts[:5]:  # ogranicz koszty
+            response = client.messages.create(
+                model=cfg.model,
+                max_tokens=500,
+                messages=[{
+                    "role": "user",
+                    "content": KNOWLEDGE_STRIP_PROMPT.format(query=query, text=text[:2000]),
+                }],
+            )
+            result = response.content[0].text.strip()
+            if result:
+                stripped.append(result)
+
+        client.close()
+        return stripped if stripped else texts
 
     def _reformulate_query(self, query: str) -> str:
         """Przeformułuj pytanie przez Claude."""
@@ -126,8 +162,10 @@ class CorrectiveRAG:
             result.steps.append(step)
 
             if decision == "accept":
-                # Generuj odpowiedź
+                # Knowledge strip — filtruj do relevantnych zdań
                 contexts = [r.text for r in search_results]
+                if self._use_knowledge_strip:
+                    contexts = self._knowledge_strip(query, contexts)
                 result.final_answer = self._generator.generate(query, contexts)
                 result.final_contexts = contexts
                 result.final_results = search_results

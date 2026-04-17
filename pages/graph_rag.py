@@ -29,6 +29,18 @@ def render():
 
 **Wymaga:** NEO4J_URI, NEO4J_USER, NEO4J_PASSWORD w .env.
 Free tier: [Neo4j Aura](https://console.neo4j.io/) (1 instancja, 50k nodes).
+
+---
+**Kiedy używać:**
+- Multi-hop QA ("Jakie firmy z Niemiec oferują PayPal?")
+- Pytania o relacje między encjami (kto, co, gdzie, ile)
+- Pytania globalne ("Jakie są główne wątki w korpusie?")
+- Topical authority / knowledge graphs w SEO
+
+**Kiedy NIE używać:**
+- Mały korpus (<10 artykułów) — overhead budowy grafu się nie opłaca
+- Pytania czysto semantyczne bez encji (lepiej: vector hybrid)
+- Dane bez wyraźnych encji i relacji
         """)
 
     # Sprawdź połączenie

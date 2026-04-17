@@ -26,6 +26,17 @@ def render():
 
 Agent widzi wyniki narzędzi i decyduje czy potrzebuje więcej informacji, czy może
 już odpowiedzieć. Max 5 iteracji.
+
+---
+**Kiedy używać:**
+- Złożone workflowy, multi-step reasoning
+- Pytania wymagające różnych strategii w trakcie (nie wiadomo z góry)
+- Research, analiza, due diligence
+
+**Kiedy NIE używać:**
+- Proste pytania (5-20x droższe niż Naive RAG: $30-150/1k zapytań)
+- Wymagana niska latencja (30-120s per zapytanie)
+- Proste FAQ — modular/advanced RAG wystarczy taniej
         """)
 
     # Sprawdź kolekcje

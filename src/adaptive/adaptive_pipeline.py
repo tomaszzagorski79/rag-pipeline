@@ -28,6 +28,12 @@ class AdaptiveResult:
 
 
 STRATEGIES = {
+    "no_retrieval": {
+        "top_k": 0,
+        "use_hyde": False,
+        "use_reranking": False,
+        "description": "NO RETRIEVAL: LLM odpowiada z pamięci (wiedza ogólna, definicje). Zero kosztów retrieval.",
+    },
     "simple": {
         "top_k": 3,
         "use_hyde": False,
@@ -92,6 +98,21 @@ class AdaptiveRAGPipeline:
         )
 
         top_k = strategy["top_k"]
+
+        # 2a. No retrieval — LLM odpowiada z pamięci
+        if top_k == 0:
+            import anthropic
+            from config.settings import get_claude_config
+            cfg = get_claude_config()
+            client = anthropic.Anthropic(api_key=cfg.api_key)
+            response = client.messages.create(
+                model=cfg.model,
+                max_tokens=1024,
+                messages=[{"role": "user", "content": query}],
+            )
+            client.close()
+            result.answer = response.content[0].text
+            return result
 
         # 2. Retrieval (standardowy lub HyDE)
         if strategy["use_hyde"]:
