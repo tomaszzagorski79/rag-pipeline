@@ -280,3 +280,46 @@ Wszystkie inne techniki powinny być oceniane **względem tego baseline'u**.
 
     df_compare = pd.DataFrame(comparison)
     st.dataframe(df_compare, use_container_width=True, hide_index=True, height=550)
+
+    # Scatter koszty × jakość
+    st.markdown("---")
+    st.header("Scatter: Koszty × Jakość")
+    st.caption("Oś X: koszt (1-4 💰), Oś Y: jakość retrieval (1-5 ⭐), wielkość: latencja")
+
+    # Parsowanie z tabeli
+    cost_map = {"💰": 1, "💰💰": 2, "💰💰💰": 3, "💰💰💰💰": 4}
+    lat_map = {
+        "⚡ Niska": 1, "⚡ Niska (+200ms)": 1, "⚡-🐌 Zależy": 2,
+        "⚡ Niska (po budowie)": 1,
+        "🐌 Średnia": 2, "🐌 Średnia (1.7x)": 2, "🐌🐌 Wysoka": 4,
+    }
+
+    sc_rows = []
+    for c in comparison:
+        cost_base = c["Koszt"].split(" ")[0].strip()
+        cost = cost_map.get(cost_base, 2)
+        quality = c["Recall"].count("⭐")
+        lat = lat_map.get(c["Latencja"], 2)
+        sc_rows.append({
+            "rag": c["RAG"],
+            "cost": cost,
+            "quality": quality,
+            "latency": lat * 15 + 10,  # rozmiar
+            "tab": c["Zakładka"],
+        })
+
+    df_sc = pd.DataFrame(sc_rows)
+    import plotly.express as px
+
+    fig_tradeoff = px.scatter(
+        df_sc, x="cost", y="quality",
+        size="latency", color="rag",
+        text="rag", hover_data=["tab"],
+        labels={"cost": "Koszt (💰)", "quality": "Jakość (⭐)"},
+        title="Trade-off: koszt vs jakość (wielkość = latencja)",
+    )
+    fig_tradeoff.update_traces(textposition="top center")
+    fig_tradeoff.update_layout(height=550, showlegend=False, xaxis_range=[0.5, 4.5], yaxis_range=[1, 6])
+    st.plotly_chart(fig_tradeoff, use_container_width=True)
+
+    st.caption("💡 **Sweet spot:** prawy-dolny róg (wysoka jakość, niski koszt). Lewy-górny = przepłacasz.")

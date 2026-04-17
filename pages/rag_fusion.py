@@ -102,6 +102,43 @@ def render():
             st.text(r.text[:300] + "...")
             st.markdown("---")
 
+        # Heatmap chunk × sub-query
+        if result.fused_results and result.per_query_results:
+            st.markdown("---")
+            st.subheader("Heatmap: chunk × sub-query")
+            st.caption("Kolor = ranking chunka w danym zapytaniu (jaśniej = wyżej). Puste = chunk nie pojawił się.")
+
+            import plotly.graph_objects as go
+            import numpy as np
+
+            chunk_ids = [r.chunk_id or r.text[:40] for r in result.fused_results]
+            chunk_labels = [f"#{i+1}: {cid[:30]}" for i, cid in enumerate(chunk_ids)]
+            queries = list(result.per_query_results.keys())
+            query_labels = [f"Q{i}: {q[:40]}" for i, q in enumerate(queries)]
+
+            # Matrix: row=chunk, col=query, value=rank (1-N) albo 0 jeśli nie pojawił się
+            matrix = np.zeros((len(chunk_ids), len(queries)))
+            for col, q in enumerate(queries):
+                results_q = result.per_query_results[q]
+                for row, cid in enumerate(chunk_ids):
+                    for rank, r in enumerate(results_q):
+                        if (r.chunk_id or r.text[:40]) == cid:
+                            matrix[row, col] = len(results_q) - rank  # wyższa wartość = lepszy ranking
+                            break
+
+            fig_hm = go.Figure(data=go.Heatmap(
+                z=matrix,
+                x=query_labels,
+                y=chunk_labels,
+                colorscale="Blues",
+                hovertemplate="Chunk: %{y}<br>Query: %{x}<br>Ranking score: %{z}<extra></extra>",
+            ))
+            fig_hm.update_layout(
+                height=400,
+                xaxis={"tickangle": -30},
+            )
+            st.plotly_chart(fig_hm, use_container_width=True)
+
         # Odpowiedź
         st.subheader("Odpowiedź")
         contexts = [r.text for r in result.fused_results]

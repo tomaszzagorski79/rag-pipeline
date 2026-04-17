@@ -102,6 +102,56 @@ już odpowiedzieć. Max 5 iteracji.
             elif step.step_type == "final_answer":
                 st.markdown(f"**✅ [{i}] Final Answer**")
 
+        # Wizualizacje
+        tool_calls = [s for s in result.steps if s.step_type == "tool_call"]
+        if tool_calls:
+            st.markdown("---")
+            st.subheader("Statystyki agenta")
+
+            col_tl, col_pie = st.columns(2)
+
+            # Timeline kroków
+            with col_tl:
+                import plotly.graph_objects as go
+                step_types = [s.step_type for s in result.steps]
+                step_names = [
+                    s.tool_name if s.step_type == "tool_call" else s.step_type
+                    for s in result.steps
+                ]
+                colors_map = {
+                    "thought": "#888",
+                    "tool_call": "#4090e0",
+                    "final_answer": "#44bb44",
+                }
+                fig_tl = go.Figure()
+                for i, (st_type, name) in enumerate(zip(step_types, step_names)):
+                    fig_tl.add_trace(go.Bar(
+                        x=[1], y=[name], orientation="h",
+                        marker_color=colors_map.get(st_type, "#aaa"),
+                        showlegend=False,
+                        hovertext=f"Krok {i+1}: {name}",
+                    ))
+                fig_tl.update_layout(
+                    title="Timeline kroków agenta",
+                    height=max(300, 50 * len(step_types)),
+                    xaxis={"visible": False},
+                    yaxis={"autorange": "reversed"},
+                )
+                st.plotly_chart(fig_tl, use_container_width=True)
+
+            # Pie użytych narzędzi
+            with col_pie:
+                from collections import Counter
+                import plotly.express as px
+                tools_used = Counter(s.tool_name for s in tool_calls)
+                fig_pie = px.pie(
+                    values=list(tools_used.values()),
+                    names=list(tools_used.keys()),
+                    title="Użyte narzędzia",
+                )
+                fig_pie.update_layout(height=max(300, 50 * len(step_types)))
+                st.plotly_chart(fig_pie, use_container_width=True)
+
         # Final answer
         st.markdown("---")
         st.subheader("Odpowiedź agenta")

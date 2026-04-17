@@ -98,7 +98,7 @@ NEO4J_PASSWORD=your_password
             st.success("Graf wyczyszczony.")
             st.rerun()
 
-    # --- Top encje ---
+    # --- Top encje + wizualizacja grafu ---
     if stats.get("entities", 0) > 0:
         st.markdown("---")
         st.subheader("Top encje w grafie")
@@ -111,7 +111,94 @@ NEO4J_PASSWORD=your_password
         if top:
             import pandas as pd
             df = pd.DataFrame(top)
-            st.dataframe(df, use_container_width=True, hide_index=True)
+
+            col_tb, col_ch = st.columns(2)
+            with col_tb:
+                st.dataframe(df, use_container_width=True, hide_index=True)
+
+            # Bar chart top encji
+            with col_ch:
+                import plotly.express as px
+                fig_bar = px.bar(
+                    df, x="mentions", y="entity", orientation="h",
+                    title="Top encje po liczbie wzmianek",
+                    labels={"mentions": "Wzmianki", "entity": "Encja"},
+                )
+                fig_bar.update_layout(height=400, yaxis={"categoryorder": "total ascending"})
+                st.plotly_chart(fig_bar, use_container_width=True)
+
+        # Interaktywny graf (top 30 encji + atrybuty)
+        with st.expander("🕸️ Interaktywna wizualizacja grafu (top 30 encji)"):
+            try:
+                import plotly.graph_objects as go
+                import math
+
+                s = Neo4jStore()
+                with s._driver.session() as session:
+                    result_edges = session.run("""
+                        MATCH (e:Entity)-[r:HAS_ATTRIBUTE]->(v:Value)
+                        WITH e, r, v LIMIT 50
+                        RETURN e.name AS source, r.name AS rel, v.text AS target
+                    """)
+                    edges = [dict(r) for r in result_edges]
+                s.close()
+
+                if edges:
+                    # Proste rozłożenie radialne: encje w centrum, wartości na zewnątrz
+                    entities = list({e["source"] for e in edges})
+                    values = list({e["target"] for e in edges})
+
+                    node_pos = {}
+                    for i, ent in enumerate(entities):
+                        angle = 2 * math.pi * i / max(len(entities), 1)
+                        node_pos[ent] = (math.cos(angle) * 1, math.sin(angle) * 1)
+                    for i, val in enumerate(values):
+                        angle = 2 * math.pi * i / max(len(values), 1)
+                        node_pos[val] = (math.cos(angle) * 2.5, math.sin(angle) * 2.5)
+
+                    edge_x, edge_y = [], []
+                    for e in edges:
+                        if e["source"] in node_pos and e["target"] in node_pos:
+                            x0, y0 = node_pos[e["source"]]
+                            x1, y1 = node_pos[e["target"]]
+                            edge_x.extend([x0, x1, None])
+                            edge_y.extend([y0, y1, None])
+
+                    fig_graph = go.Figure()
+                    fig_graph.add_trace(go.Scatter(
+                        x=edge_x, y=edge_y, mode="lines",
+                        line=dict(width=0.5, color="#888"), hoverinfo="none",
+                    ))
+                    # Encje
+                    fig_graph.add_trace(go.Scatter(
+                        x=[node_pos[e][0] for e in entities],
+                        y=[node_pos[e][1] for e in entities],
+                        mode="markers+text",
+                        marker=dict(size=20, color="#4090e0"),
+                        text=entities, textposition="top center",
+                        name="Encje",
+                        hovertext=entities,
+                    ))
+                    # Wartości
+                    fig_graph.add_trace(go.Scatter(
+                        x=[node_pos[v][0] for v in values],
+                        y=[node_pos[v][1] for v in values],
+                        mode="markers+text",
+                        marker=dict(size=10, color="#ffaa00"),
+                        text=[v[:20] for v in values], textposition="top center",
+                        name="Wartości",
+                        hovertext=values,
+                    ))
+                    fig_graph.update_layout(
+                        title="Graf wiedzy EAV (Entity → Attribute → Value)",
+                        showlegend=True,
+                        height=600,
+                        xaxis={"visible": False},
+                        yaxis={"visible": False},
+                    )
+                    st.plotly_chart(fig_graph, use_container_width=True)
+            except Exception as e:
+                st.warning(f"Nie można zbudować wizualizacji: {e}")
 
     # --- Query ---
     st.markdown("---")

@@ -117,6 +117,26 @@ def render():
                     st.text(r.text[:500] + ("..." if len(r.text) > 500 else ""))
                     st.markdown("---")
 
+            # Scatter: score vs długość chunka
+            if len(filtered) >= 2:
+                import plotly.express as px
+                import pandas as pd
+                df_sc = pd.DataFrame({
+                    "rank": list(range(1, len(filtered) + 1)),
+                    "score": [r.score for r in filtered],
+                    "length": [len(r.text) for r in filtered],
+                    "slug": [r.metadata.get("slug", "?") for r in filtered],
+                })
+                fig_sc = px.scatter(
+                    df_sc, x="length", y="score",
+                    size="rank", color="slug",
+                    hover_data={"rank": True, "score": ":.4f", "length": True, "slug": True},
+                    labels={"length": "Długość chunka (znaki)", "score": "Score RRF"},
+                    title=f"Score vs długość chunka ({metoda})",
+                )
+                fig_sc.update_layout(height=350)
+                st.plotly_chart(fig_sc, use_container_width=True)
+
             # Generation — tylko z przefiltrowanych kontekstów
             with st.spinner(f"Generowanie odpowiedzi ({metoda})..."):
                 contexts = [r.text for r in filtered]

@@ -87,6 +87,43 @@ Idealne do długich odpowiedzi gdzie kontekst się zmienia w trakcie.
         col_m2.metric("Active retrievals", result.total_retrievals)
         col_m3.metric("Avg pewność", f"{sum(s.confidence for s in result.steps)/max(len(result.steps),1):.1f}/10")
 
+        # Wykres pewności per zdanie
+        if result.steps:
+            st.markdown("---")
+            st.subheader("Pewność per zdanie")
+            import plotly.graph_objects as go
+
+            x_vals = list(range(1, len(result.steps) + 1))
+            y_vals = [s.confidence for s in result.steps]
+            retrieval_x = [i + 1 for i, s in enumerate(result.steps) if s.needed_retrieval]
+            retrieval_y = [s.confidence for s in result.steps if s.needed_retrieval]
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=x_vals, y=y_vals,
+                mode="lines+markers",
+                name="Pewność",
+                line=dict(color="#4090e0", width=3),
+                marker=dict(size=10),
+            ))
+            if retrieval_x:
+                fig.add_trace(go.Scatter(
+                    x=retrieval_x, y=retrieval_y,
+                    mode="markers",
+                    name="Triggered retrieval",
+                    marker=dict(size=20, color="red", symbol="star"),
+                ))
+            fig.add_hline(y=threshold, line_dash="dash", line_color="gray",
+                          annotation_text=f"Próg = {threshold}")
+            fig.update_layout(
+                title="Pewność Claude'a per zdanie + aktywne retrievals",
+                xaxis_title="Numer zdania",
+                yaxis_title="Pewność (1-10)",
+                yaxis_range=[0, 10.5],
+                height=350,
+            )
+            st.plotly_chart(fig, use_container_width=True)
+
         # Trace — zdanie po zdaniu
         st.markdown("---")
         st.subheader("FLARE Trace (zdanie po zdaniu)")

@@ -220,6 +220,41 @@ def render():
             )
             st.plotly_chart(fig_bar, use_container_width=True)
 
+        # Scatter faithfulness vs relevancy per pytanie
+        st.subheader("Analiza problematycznych pytań")
+        st.caption("Punkty w lewym-dolnym rogu = problematyczne pytania. Idealne = prawy-górny.")
+
+        scatter_rows = []
+        for method, method_data in data.items():
+            per_q = method_data.get("per_question", [])
+            for q in per_q:
+                f = q.get("faithfulness")
+                r = q.get("answer_relevancy")
+                if f is not None and r is not None:
+                    scatter_rows.append({
+                        "method": method,
+                        "question": str(q.get("user_input", ""))[:80],
+                        "faithfulness": f,
+                        "relevancy": r,
+                    })
+
+        if scatter_rows:
+            df_sc = pd.DataFrame(scatter_rows)
+            import plotly.express as px
+            fig_sc = px.scatter(
+                df_sc, x="faithfulness", y="relevancy",
+                color="method", hover_data=["question"],
+                labels={"faithfulness": "Faithfulness", "relevancy": "Answer Relevancy"},
+                title="Faithfulness × Answer Relevancy per pytanie",
+                range_x=[0, 1.05], range_y=[0, 1.05],
+            )
+            # Linie progowe
+            fig_sc.add_shape(type="line", x0=0.7, x1=0.7, y0=0, y1=1.05, line=dict(dash="dash", color="gray"))
+            fig_sc.add_shape(type="line", x0=0, x1=1.05, y0=0.7, y1=0.7, line=dict(dash="dash", color="gray"))
+            fig_sc.update_traces(marker=dict(size=10, opacity=0.7))
+            fig_sc.update_layout(height=500)
+            st.plotly_chart(fig_sc, use_container_width=True)
+
         # --- Szczegóły per pytanie ---
         st.subheader("Wyniki per pytanie")
 

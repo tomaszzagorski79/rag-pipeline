@@ -86,8 +86,69 @@ słabe wyniki. Efekt: halucynacje.
         with st.spinner("CRAG w toku..."):
             result = crag.run(query, collection_name, limit=top_k)
 
-        # Wizualizacja łańcucha decyzji
+        # Sankey diagram decision flow
         st.markdown("---")
+        st.subheader("Diagram przepływu decyzji (Sankey)")
+
+        import plotly.graph_objects as go
+
+        # Zbuduj węzły i linki
+        labels = []
+        sources = []
+        targets = []
+        values = []
+        colors = []
+
+        # Węzły: Start → Próby → Decyzje → Output
+        labels.append("Start")
+        prev_idx = 0
+
+        for i, step in enumerate(result.steps):
+            # Próba N
+            labels.append(f"Próba {i+1}\nscore: {step.best_score:.3f}")
+            try_idx = len(labels) - 1
+            sources.append(prev_idx)
+            targets.append(try_idx)
+            values.append(1)
+            colors.append("#888")
+
+            # Decyzja
+            if step.decision == "accept":
+                labels.append("✅ ACCEPT")
+                dec_color = "rgba(40,200,40,0.8)"
+            elif step.decision == "reformulate":
+                labels.append("🔄 REFORMULATE")
+                dec_color = "rgba(250,160,0,0.8)"
+            else:
+                labels.append("❌ REJECT")
+                dec_color = "rgba(250,0,0,0.8)"
+
+            dec_idx = len(labels) - 1
+            sources.append(try_idx)
+            targets.append(dec_idx)
+            values.append(1)
+            colors.append(dec_color)
+            prev_idx = dec_idx
+
+        # Output
+        labels.append("Finalna odpowiedź" if not result.was_rejected else "Odmowa")
+        sources.append(prev_idx)
+        targets.append(len(labels) - 1)
+        values.append(1)
+        colors.append("#4090e0")
+
+        fig_sankey = go.Figure(data=[go.Sankey(
+            node=dict(
+                pad=20, thickness=25,
+                line=dict(color="black", width=0.5),
+                label=labels,
+                color="#aaa",
+            ),
+            link=dict(source=sources, target=targets, value=values, color=colors),
+        )])
+        fig_sankey.update_layout(title="Przepływ decyzji CRAG", height=400)
+        st.plotly_chart(fig_sankey, use_container_width=True)
+
         st.subheader("Łańcuch decyzji")
 
         for step in result.steps:

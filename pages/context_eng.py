@@ -273,6 +273,63 @@ def render():
         progress_val = min(assembled.total_tokens_estimate / budget.available_for_retrieval(), 1.0)
         st.progress(progress_val, text=f"{assembled.total_tokens_estimate:,} / {budget.available_for_retrieval():,} tokenów retrieval")
 
+        # Budget pie + Sankey flow
+        col_pie, col_sankey = st.columns(2)
+
+        with col_pie:
+            import plotly.graph_objects as go
+            fig_pie = go.Figure(data=[go.Pie(
+                labels=["System prompt", "History", "Retrieval", "Response reserve"],
+                values=[
+                    budget.system_prompt,
+                    budget.history,
+                    assembled.total_tokens_estimate,
+                    budget.response_reserve,
+                ],
+                hole=0.4,
+            )])
+            fig_pie.update_layout(title="Podział budżetu tokenów", height=350)
+            st.plotly_chart(fig_pie, use_container_width=True)
+
+        with col_sankey:
+            # Sankey: źródła → assembler → LLM
+            labels = []
+            sources = []
+            targets = []
+            values = []
+
+            src_idx = {}
+            for src in assembled.facets.by_source:
+                labels.append(f"{src}\n({assembled.facets.by_source[src]})")
+                src_idx[src] = len(labels) - 1
+
+            assembler_idx = len(labels)
+            labels.append("Context\nAssembler")
+
+            llm_idx = len(labels)
+            labels.append("LLM\n(Claude)")
+
+            for src, count in assembled.facets.by_source.items():
+                sources.append(src_idx[src])
+                targets.append(assembler_idx)
+                values.append(count)
+
+            sources.append(assembler_idx)
+            targets.append(llm_idx)
+            values.append(len(assembled.ranked_contexts))
+
+            if sources:
+                fig_sankey = go.Figure(data=[go.Sankey(
+                    node=dict(
+                        pad=15, thickness=20,
+                        label=labels,
+                        color=["#4090e0", "#ffaa00", "#44bb44", "#888", "#222"][:len(labels)],
+                    ),
+                    link=dict(source=sources, target=targets, value=values),
+                )])
+                fig_sankey.update_layout(title="Przepływ kontekstu", height=350)
+                st.plotly_chart(fig_sankey, use_container_width=True)
+
         # --- 5. Memory integration ---
         memory_context = ""
         if use_memory:

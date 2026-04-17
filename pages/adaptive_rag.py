@@ -72,6 +72,10 @@ Oszczędność: 30-50% mniej wywołań API przy prostych pytaniach.
 
     query = st.text_input("Zapytanie", key="adaptive_query")
 
+    # Historia klasyfikacji w session_state
+    if "adaptive_history" not in st.session_state:
+        st.session_state["adaptive_history"] = []
+
     if st.button("🧠 Analizuj i odpowiedz", type="primary", disabled=not query):
         from src.adaptive.adaptive_pipeline import AdaptiveRAGPipeline
         from config.settings import get_qdrant_config
@@ -118,3 +122,37 @@ Oszczędność: 30-50% mniej wywołań API przy prostych pytaniach.
         st.markdown("---")
         st.subheader("Odpowiedź")
         st.markdown(result.answer)
+
+        # Dodaj do historii
+        st.session_state["adaptive_history"].append({
+            "query": query,
+            "classification": result.classification,
+        })
+
+    # Pie chart historii klasyfikacji
+    history = st.session_state.get("adaptive_history", [])
+    if len(history) >= 2:
+        st.markdown("---")
+        st.subheader(f"Historia klasyfikacji ({len(history)} zapytań)")
+
+        from collections import Counter
+        import plotly.express as px
+
+        counts = Counter(h["classification"] for h in history)
+        fig_pie = px.pie(
+            values=list(counts.values()),
+            names=list(counts.keys()),
+            title="Rozkład klasyfikacji w tej sesji",
+            color_discrete_map={
+                "no_retrieval": "#aaaaaa",
+                "simple": "#44bb44",
+                "medium": "#ffaa00",
+                "complex": "#ff4444",
+            },
+        )
+        fig_pie.update_layout(height=350)
+        st.plotly_chart(fig_pie, use_container_width=True)
+
+        if st.button("🗑️ Wyczyść historię"):
+            st.session_state["adaptive_history"] = []
+            st.rerun()

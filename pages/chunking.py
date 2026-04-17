@@ -133,6 +133,34 @@ def render():
                                        help="Chunker liczy cosine similarity między sąsiednimi zdaniami i tnie tam gdzie similarity spada. Percentile 85 = tnie tylko 15% najostrzejszych spadków (zmian tematu). Wyższy = mniej cięć = większe chunki.")
         st.caption("Wyższy = mniej chunków (łączy podobne zdania).")
 
+    # --- Konfiguracja dodatkowych metod ---
+    st.markdown("")
+    col4, col5, col6, col7 = st.columns(4)
+
+    with col4:
+        st.subheader("Proposition")
+        st.caption("⚠️ Claude API per fragment")
+        st.caption("Brak parametrów — LLM decyduje jak rozbić na atomowe fakty.")
+
+    with col5:
+        st.subheader("Parent-Child")
+        parent_child_size = st.number_input("Rozmiar child (znaki)", value=300, step=50, key="pc_size",
+                                            help="Rozmiar małych chunków (children) używanych do retrieval. Do LLM trafia cały parent (sekcja H2).")
+        parent_child_overlap = st.number_input("Overlap child", value=50, step=10, key="pc_overlap",
+                                               help="Overlap między małymi chunkami.")
+
+    with col6:
+        st.subheader("Sentence")
+        sentence_min_len = st.number_input("Min długość zdania", value=15, step=5, key="sent_min",
+                                           help="Pomiń zdania krótsze niż N znaków (filtruje szum typu '...' czy 'np.').")
+        st.caption("Każde zdanie = osobny chunk.")
+
+    with col7:
+        st.subheader("Layout-aware")
+        layout_max = st.number_input("Max rozmiar bloku", value=2000, step=200, key="layout_max",
+                                     help="Bloki (tabele, listy, sekcje) większe niż ten limit zostaną podzielone. Małe bloki łączone.")
+        st.caption("Rozpoznaje tabele, listy, nagłówki.")
+
     # --- Wybór metod ---
     st.markdown("---")
     st.header("Indeksowanie")
@@ -261,7 +289,11 @@ def render():
             col_c.metric("Min", min(lengths) if lengths else 0)
             col_d.metric("Max", max(lengths) if lengths else 0)
 
-            all_stats[metoda] = {"count": len(all_chunks), "avg": sum(lengths)/len(lengths) if lengths else 0}
+            all_stats[metoda] = {
+                "count": len(all_chunks),
+                "avg": sum(lengths)/len(lengths) if lengths else 0,
+                "lengths": lengths,
+            }
 
             # Embeddingi dense
             progress.progress(0.4, text=f"Embeddingi dense ({metoda})...")
@@ -295,6 +327,42 @@ def render():
                 for k, v in all_stats.items()
             ])
             st.dataframe(df, use_container_width=True, hide_index=True)
+
+            # Box plot rozkładu długości per metoda
+            import plotly.graph_objects as go
+            fig_box = go.Figure()
+            for metoda, data in all_stats.items():
+                if data.get("lengths"):
+                    fig_box.add_trace(go.Box(
+                        y=data["lengths"],
+                        name=metoda,
+                        boxmean=True,
+                    ))
+            fig_box.update_layout(
+                title="Rozkład długości chunków per metoda",
+                yaxis_title="Długość (znaki)",
+                height=400,
+            )
+            st.plotly_chart(fig_box, use_container_width=True)
+
+            # Histogram nakładający wszystkie metody
+            fig_hist = go.Figure()
+            for metoda, data in all_stats.items():
+                if data.get("lengths"):
+                    fig_hist.add_trace(go.Histogram(
+                        x=data["lengths"],
+                        name=metoda,
+                        opacity=0.6,
+                        nbinsx=30,
+                    ))
+            fig_hist.update_layout(
+                title="Histogram długości chunków (nakładający)",
+                xaxis_title="Długość (znaki)",
+                yaxis_title="Liczba chunków",
+                barmode="overlay",
+                height=400,
+            )
+            st.plotly_chart(fig_hist, use_container_width=True)
 
     # --- Podgląd chunków ---
     st.markdown("---")

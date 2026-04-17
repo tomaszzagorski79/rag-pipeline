@@ -111,6 +111,47 @@ def render():
             cols[lvl].metric(label, len(nodes_at_level))
         cols[-1].metric("Total", len(tree.nodes))
 
+        # Treemap drzewa
+        st.markdown("---")
+        st.subheader("Treemap drzewa RAPTOR")
+
+        import plotly.graph_objects as go
+
+        tm_labels = []
+        tm_parents = []
+        tm_values = []
+        tm_texts = []
+
+        for node_id, node in tree.nodes.items():
+            tm_labels.append(node_id)
+            # Parent to node który ma ten node_id w children_ids
+            parent_id = ""
+            for other_id, other in tree.nodes.items():
+                if node_id in other.children_ids:
+                    parent_id = other_id
+                    break
+            tm_parents.append(parent_id)
+            tm_values.append(max(1, len(node.text) // 10))
+            label = f"L{node.level}: {node.text[:60]}..." if node.is_summary else node.text[:60]
+            tm_texts.append(label)
+
+        fig_tm = go.Figure(go.Treemap(
+            labels=tm_labels,
+            parents=tm_parents,
+            values=tm_values,
+            text=tm_texts,
+            hovertext=tm_texts,
+            root_color="lightgrey",
+            marker=dict(
+                colors=[node.level for node in tree.nodes.values()],
+                colorscale="Viridis",
+                showscale=True,
+                colorbar=dict(title="Level"),
+            ),
+        ))
+        fig_tm.update_layout(title="Hierarchia RAPTOR — wielkość = długość tekstu", height=500)
+        st.plotly_chart(fig_tm, use_container_width=True)
+
         # Pokaż streszczenia wyższych poziomów
         for lvl in range(1, tree.levels + 1):
             with st.expander(f"Streszczenia Level {lvl}"):

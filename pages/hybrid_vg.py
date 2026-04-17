@@ -156,6 +156,37 @@ def render():
                 prefix += "]"
                 all_contexts.append(f"{prefix} {m.get('text', '')}")
 
+        # Venn diagram: overlap vector × graph
+        vector_cids = {r.chunk_id for r in vector_results if r.chunk_id}
+        graph_cids = set()
+        for ctx in graph_result.graph_contexts:
+            for m in ctx.mentions:
+                cid = m.get("chunk_id", "")
+                if cid:
+                    graph_cids.add(cid)
+
+        if vector_cids or graph_cids:
+            st.markdown("---")
+            st.subheader("Venn: pokrycie chunków (Vector vs Graph)")
+
+            import matplotlib.pyplot as plt
+            from matplotlib_venn import venn2
+
+            fig, ax = plt.subplots(figsize=(6, 4))
+            venn2(
+                subsets=(vector_cids, graph_cids),
+                set_labels=("Vector (Qdrant)", "Graph (Neo4j)"),
+                ax=ax,
+            )
+            ax.set_title(f"Pokrycie chunków: Vector={len(vector_cids)}, Graph={len(graph_cids)}, Wspólne={len(vector_cids & graph_cids)}")
+            st.pyplot(fig)
+            plt.close(fig)
+
+            st.caption(
+                "💡 **Interpretacja:** Chunki we **wspólnej** części (lewa+prawa) pojawiły się w obu źródłach "
+                "= mocny sygnał. Chunki tylko w jednym źródle = komplementarne informacje."
+            )
+
         with st.spinner("Generowanie odpowiedzi z hybrydowego kontekstu..."):
             answer = generator.generate(query, all_contexts[:15])
 
