@@ -6,3 +6,11 @@ headless = true
 
 [client]
 showSidebarNavigation = false
+
+[theme]
+base = "dark"
+primaryColor = "#8B5CF6"
+backgroundColor = "#0E1117"
+secondaryBackgroundColor = "#1A1C23"
+textColor = "#E4E4E7"
+font = "sans serif"

@@ -1,50 +1,94 @@
-"""RAG Pipeline — główna aplikacja Streamlit.
+"""RAG Pipeline — główna aplikacja Streamlit (Neural Lab theme).
 
 Uruchomienie:
     .venv\\Scripts\\streamlit run app.py
 """
 
+from pathlib import Path
 import streamlit as st
 
 st.set_page_config(
-    page_title="RAG Pipeline",
-    page_icon="🔍",
+    page_title="RAG Pipeline — Neural Lab",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Nawigacja w sidebarze
-st.sidebar.title("RAG Pipeline")
+# --- Custom CSS (Neural Lab theme) ---
+_css_path = Path(__file__).parent / "assets" / "custom.css"
+if _css_path.exists():
+    st.markdown(f"<style>{_css_path.read_text(encoding='utf-8')}</style>", unsafe_allow_html=True)
+
+# --- Nawigacja z ikonami ---
+NAV_ITEMS = [
+    ("🏠", "Przegląd"),
+    ("📥", "1. Scraping"),
+    ("🔤", "2. Embeddingi tytułów"),
+    ("📑", "3. Chunking & Indeksowanie"),
+    ("🔍", "4. Zapytania"),
+    ("🎯", "5. Re-ranking"),
+    ("💭", "6. HyDE"),
+    ("🧠", "7. Adaptive RAG"),
+    ("🔄", "8. CRAG"),
+    ("📊", "9. Ewaluacja RAGAS"),
+    ("🔬", "10. Hallucination Detection"),
+    ("⚡", "11. Benchmarki embeddingów"),
+    ("💎", "12. CRQ Scoring"),
+    ("📖", "13. PageIndex"),
+    ("🤖", "14. Agentic RAG"),
+    ("🕸️", "15. Graph RAG"),
+    ("⚛️", "16. Hybrid Vector+Graph"),
+    ("🎛️", "17. Context Engineering"),
+    ("🔀", "18. RAG-Fusion"),
+    ("🔥", "19. FLARE"),
+    ("🌲", "20. RAPTOR"),
+    ("🏇", "21. Speculative RAG"),
+    ("🗺️", "22. Decision Framework"),
+]
+
+NAV_LABELS = [f"{icon}  {name}" for icon, name in NAV_ITEMS]
+NAV_LABEL_TO_NAME = {label: name for label, (_, name) in zip(NAV_LABELS, NAV_ITEMS)}
+
+st.sidebar.markdown(
+    """
+    <div style="padding: 12px 0 4px 0;">
+        <h1 style="margin: 0; font-size: 1.4em; font-weight: 800;">
+            🧠 RAG Pipeline
+        </h1>
+        <p style="margin: 4px 0 0 0; font-size: 0.75em; color: #71717A; letter-spacing: 0.05em; text-transform: uppercase;">
+            Neural Lab · 22 Techniki
+        </p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.sidebar.markdown("---")
 
-strona = st.sidebar.radio(
+strona_label = st.sidebar.radio(
     "Nawigacja",
-    [
-        "Przegląd",
-        "1. Scraping",
-        "2. Embeddingi tytułów",
-        "3. Chunking & Indeksowanie",
-        "4. Zapytania",
-        "5. Re-ranking",
-        "6. HyDE",
-        "7. Adaptive RAG",
-        "8. CRAG",
-        "9. Ewaluacja RAGAS",
-        "10. Hallucination Detection",
-        "11. Benchmarki embeddingów",
-        "12. CRQ Scoring",
-        "13. PageIndex",
-        "14. Agentic RAG",
-        "15. Graph RAG",
-        "16. Hybrid Vector+Graph",
-        "17. Context Engineering",
-        "18. RAG-Fusion",
-        "19. FLARE",
-        "20. RAPTOR",
-        "21. Speculative RAG",
-        "22. Decision Framework",
-    ],
+    NAV_LABELS,
     label_visibility="collapsed",
+)
+strona = NAV_LABEL_TO_NAME[strona_label]
+
+# --- Breadcrumb ---
+current_icon = next((icon for icon, name in NAV_ITEMS if name == strona), "🔍")
+st.markdown(
+    f"""
+    <div style="
+        display: flex; align-items: center; gap: 8px;
+        padding: 8px 0 16px 0;
+        font-size: 0.85em; color: #71717A;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        margin-bottom: 20px;
+    ">
+        <span style="opacity: 0.6;">RAG Pipeline</span>
+        <span style="opacity: 0.4;">/</span>
+        <span style="color: #A78BFA; font-weight: 500;">{current_icon} {strona}</span>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
 
 # Status .env
