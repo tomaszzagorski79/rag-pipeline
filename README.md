@@ -114,24 +114,61 @@ Aktualizacje: w razie nowych funkcji wystarczy `git pull`.
 
 Przy kolejnych uruchomieniach — tylko aktywacja venv i start serwera (~3 sekundy).
 
-> ### ⚠️ WAŻNE: Windows Defender przy pierwszym uruchomieniu
+> ### ⚠️ WAŻNE: Znane problemy z Windows Defender (tylko Windows)
 >
-> Przy pierwszym starcie Streamlit system zapyta o zgodę na dostęp do sieci
-> (Windows Defender Firewall). **Musisz zezwolić**, inaczej aplikacja
-> nie otworzy się w przeglądarce.
+> Windows Defender blokuje pliki z nowo zainstalowanych bibliotek Python.
+> To **nie jest wada pipeline'u** — każdy projekt Python ma ten problem przy pierwszej instalacji.
 >
-> **Co zrobić:**
-> 1. Gdy pojawi się okno Defender Firewall z pytaniem o `python.exe`
-> 2. **Zaznacz ✅ "Sieci prywatne"** (Private networks)
-> 3. Kliknij **"Zezwól na dostęp"** (Allow access)
+> Są **3 różne przypadki** które mogą się pojawić:
 >
-> To wystarczy — **tylko raz**. Po tym Streamlit zawsze uruchomi się bez pytań.
+> ---
 >
-> **Jeśli przypadkiem kliknąłeś "Odmów":**
-> - Start → "Zapora systemu Windows Defender" → "Zezwalaj aplikacji na dostęp przez Zaporę"
-> - Zmień ustawienia → znajdź `python.exe` (ścieżka `.venv\Scripts\python.exe`)
-> - Zaznacz **Prywatne** i **Publiczne** → OK
-> - Albo prościej: zamknij i uruchom `start.bat` ponownie
+> #### 🔴 Problem 1: Firewall pyta o `python.exe`
+>
+> Przy pierwszym starcie Streamlit otworzy port 8501 → Defender Firewall pyta o zgodę.
+>
+> **Rozwiązanie:**
+> 1. Zaznacz ✅ **"Sieci prywatne"** (Private networks)
+> 2. Kliknij **"Zezwól na dostęp"**
+>
+> Jeśli kliknąłeś "Odmów":
+> - Start → *"Zapora systemu Windows Defender"* → *"Zezwalaj aplikacji..."*
+> - Znajdź `python.exe` (ścieżka `.venv\Scripts\python.exe`) → zaznacz **Prywatne + Publiczne** → OK
+>
+> ---
+>
+> #### 🔴 Problem 2: `streamlit.exe` zablokowany (`ApplicationFailedException`)
+>
+> Error w PowerShell: *"Program 'streamlit.exe' failed to run: Zasady kontroli aplikacji zablokowały ten plik"*.
+>
+> **Rozwiązanie (już wbudowane w `start.bat`):**
+> Skrypty startowe używają `python -m streamlit` zamiast bezpośredniego `streamlit.exe`. Jeśli nadal widzisz błąd, odpal ręcznie:
+> ```powershell
+> python -m streamlit run app.py
+> ```
+>
+> ---
+>
+> #### 🔴 Problem 3: `ImportError: DLL load failed` (pyarrow / numpy / inne)
+>
+> Błąd na zakładce używającej `st.dataframe` (np. Decision Framework, Benchmarki): *"Zasady kontroli aplikacji zablokowały ten plik"* przy imporcie `pyarrow.lib`.
+>
+> **Rozwiązanie: dodaj folder `.venv` do wyjątków Defender.**
+>
+> 1. Start → **"Zabezpieczenia Windows"** → *Ochrona przed zagrożeniami i wirusami*
+> 2. *Ustawienia ochrony przed wirusami* → **Zarządzaj ustawieniami**
+> 3. Przewiń do **Wykluczenia** → *Dodaj lub usuń wykluczenia*
+> 4. **+ Dodaj wykluczenie** → *Folder*
+> 5. Wybierz: `C:\sciezka\do\rag-pipeline-main\.venv`
+> 6. Zatwierdź (potrzeba UAC)
+> 7. Zamknij aplikację (Ctrl+C) i odpal ponownie `start.bat`
+>
+> **Alternatywnie — odblokuj konkretny DLL:**
+> Eksplorator → `.venv\Lib\site-packages\pyarrow\arrow.dll` → Prawy klik → Właściwości → zaznacz **"Odblokuj"** → OK.
+>
+> ---
+>
+> **Dlaczego to się dzieje:** Windows Defender *Attack Surface Reduction* skanuje każdy nowo zainstalowany plik wykonywalny / DLL. Biblioteki Python (pyarrow, numpy, torch itd.) mają natywne DLL-e w C++ bez podpisów Microsoft — Defender je blokuje "na wszelki wypadek". **Folder `.venv` jest bezpieczny** (zawiera tylko biblioteki zainstalowane przez pip), dodanie go do wyjątków jest standardową praktyką dla developerów Python.
 
 ### Krok 3: Uzupełnij klucze API
 
