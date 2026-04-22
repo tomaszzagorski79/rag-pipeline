@@ -258,9 +258,142 @@ h1 {
     overflow: hidden;
 }
 
-/* ===== Spinner — custom loading ===== */
-.stSpinner > div {
-    border-top-color: #8B5CF6 !important;
+/* ===== Ukryj domyślny status "running man" w prawym-górnym rogu ===== */
+[data-testid="stStatusWidget"] {
+    display: none !important;
+}
+
+/* Stara selekcja (starsze wersje Streamlit) */
+.stDeployButton,
+.stActionButton[data-testid="manage-app-button"],
+[data-testid="stToolbar"] > div:has([aria-label*="Running"]),
+div[class*="RunningMan"] {
+    display: none !important;
+}
+
+/* ===== Custom spinner — prominentny, widoczny, z gradientem ===== */
+.stSpinner {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    padding: 20px 24px !important;
+    margin: 16px 0 !important;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(6, 182, 212, 0.06) 100%) !important;
+    border: 1px solid rgba(139, 92, 246, 0.3) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 0 40px rgba(139, 92, 246, 0.15) !important;
+    animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% {
+        border-color: rgba(139, 92, 246, 0.3);
+        box-shadow: 0 0 40px rgba(139, 92, 246, 0.15);
+    }
+    50% {
+        border-color: rgba(139, 92, 246, 0.6);
+        box-shadow: 0 0 60px rgba(139, 92, 246, 0.3);
+    }
+}
+
+/* Spinner icon — większy, z gradientem */
+.stSpinner > div:first-child {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border: none !important;
+    border-radius: 50% !important;
+    background:
+        conic-gradient(from 0deg, transparent 0deg, #8B5CF6 90deg, #06B6D4 180deg, #8B5CF6 270deg, transparent 360deg),
+        linear-gradient(135deg, #0E1117, #1A1C23);
+    background-clip: padding-box;
+    animation: spinner-rotate 1s linear infinite !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.stSpinner > div:first-child::before {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    background: #1A1C23;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.stSpinner > div:first-child::after {
+    content: "🧠";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    z-index: 2;
+    animation: pulse-scale 1.5s ease-in-out infinite;
+}
+
+@keyframes spinner-rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse-scale {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.15); opacity: 0.8; }
+}
+
+/* Tekst spinnera — większy, ładnie sformatowany */
+.stSpinner > div:last-child, .stSpinner p {
+    font-family: 'Inter', sans-serif !important;
+    font-size: 1.05em !important;
+    font-weight: 500 !important;
+    color: #E4E4E7 !important;
+    letter-spacing: -0.01em !important;
+    margin: 0 !important;
+}
+
+/* Przed tekstem spinnera — animowane 3 kropki */
+.stSpinner > div:last-child::after {
+    content: "";
+    display: inline-block;
+    width: 24px;
+    text-align: left;
+    animation: dots 1.4s steps(4, end) infinite;
+}
+
+@keyframes dots {
+    0% { content: ""; }
+    25% { content: "."; }
+    50% { content: ".."; }
+    75% { content: "..."; }
+    100% { content: ""; }
+}
+
+/* ===== Top progress bar podczas rerunu Streamlit ===== */
+body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #8B5CF6 0%, #06B6D4 50%, #8B5CF6 100%);
+    background-size: 200% 100%;
+    z-index: 9999;
+    transition: width 0.3s ease;
+    pointer-events: none;
+}
+
+/* Aktywowany gdy strona się ładuje (data attribute dodane przez streamlit) */
+body[data-testid="stAppViewContainer"][data-loading="true"]::before,
+html:has([data-testid="stSpinner"])::before {
+    width: 100%;
+    animation: progress-shimmer 1.5s linear infinite;
+}
+
+@keyframes progress-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
 }
 
 /* ===== Checkbox / Radio — accent color ===== */
