@@ -211,15 +211,21 @@ def render():
         store = QdrantStore()
         qdrant_cfg = get_qdrant_config()
 
-        cols = st.columns(3)
-        for i, method in enumerate(AVAILABLE_METHODS):
-            name = qdrant_cfg.collection_name(method)
-            with cols[i]:
-                if store.collection_exists(name):
-                    count = store.count_points(name)
-                    st.metric(f"articles_{method}", f"{count} punktów")
-                else:
-                    st.metric(f"articles_{method}", "nie istnieje")
+        # Responsive columns — max 4 na wiersz
+        n_methods = len(AVAILABLE_METHODS)
+        cols_per_row = min(4, n_methods)
+
+        for row_start in range(0, n_methods, cols_per_row):
+            row_methods = AVAILABLE_METHODS[row_start:row_start + cols_per_row]
+            cols = st.columns(cols_per_row)
+            for i, method in enumerate(row_methods):
+                name = qdrant_cfg.collection_name(method)
+                with cols[i]:
+                    if store.collection_exists(name):
+                        count = store.count_points(name)
+                        st.metric(f"articles_{method}", f"{count} punktów")
+                    else:
+                        st.metric(f"articles_{method}", "nie istnieje")
         store.close()
     except Exception as e:
         st.warning(f"Nie można połączyć z Qdrant: {e}")
@@ -366,15 +372,26 @@ def render():
 
     # --- Podgląd chunków ---
     st.markdown("---")
-    st.header("Podgląd chunków")
+    st.header("🔬 Podgląd chunków (sandbox)")
+    st.caption(
+        "**To jest osobna sekcja eksploracyjna** — podejrzyj jak KAŻDA z 7 metod tnie dany artykuł, "
+        "bez wpływu na indeksowanie. Wybór metody tutaj nie ma nic wspólnego z multiselect powyżej."
+    )
 
     preview_article = st.selectbox(
         "Wybierz artykuł do podglądu",
         existing,
         format_func=lambda p: p.name,
         key="preview_article",
+        help="Artykuł zostanie pocięty wybraną metodą TYLKO do podglądu — nic nie trafia do Qdrant.",
     )
-    preview_method = st.radio("Metoda", AVAILABLE_METHODS, horizontal=True, key="preview_method")
+    preview_method = st.radio(
+        "Metoda chunkingu do podglądu",
+        AVAILABLE_METHODS,
+        horizontal=True,
+        key="preview_method",
+        help="Wybierz jedną z 7 metod, żeby zobaczyć jak dzieli wybrany artykuł.",
+    )
 
     if st.button("Pokaż chunki"):
         from config.settings import ChunkingConfig
