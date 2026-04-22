@@ -114,6 +114,25 @@ Aktualizacje: w razie nowych funkcji wystarczy `git pull`.
 
 Przy kolejnych uruchomieniach — tylko aktywacja venv i start serwera (~3 sekundy).
 
+> ### ⚠️ WAŻNE: Windows Defender przy pierwszym uruchomieniu
+>
+> Przy pierwszym starcie Streamlit system zapyta o zgodę na dostęp do sieci
+> (Windows Defender Firewall). **Musisz zezwolić**, inaczej aplikacja
+> nie otworzy się w przeglądarce.
+>
+> **Co zrobić:**
+> 1. Gdy pojawi się okno Defender Firewall z pytaniem o `python.exe`
+> 2. **Zaznacz ✅ "Sieci prywatne"** (Private networks)
+> 3. Kliknij **"Zezwól na dostęp"** (Allow access)
+>
+> To wystarczy — **tylko raz**. Po tym Streamlit zawsze uruchomi się bez pytań.
+>
+> **Jeśli przypadkiem kliknąłeś "Odmów":**
+> - Start → "Zapora systemu Windows Defender" → "Zezwalaj aplikacji na dostęp przez Zaporę"
+> - Zmień ustawienia → znajdź `python.exe` (ścieżka `.venv\Scripts\python.exe`)
+> - Zaznacz **Prywatne** i **Publiczne** → OK
+> - Albo prościej: zamknij i uruchom `start.bat` ponownie
+
 ### Krok 3: Uzupełnij klucze API
 
 Przy pierwszym uruchomieniu otworzy się notatnik z plikiem `.env`. Uzupełnij minimum 3 wymagane klucze:

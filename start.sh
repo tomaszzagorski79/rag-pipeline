@@ -102,4 +102,4 @@ echo ""
     fi
 }) &
 
-streamlit run app.py --server.port 8501 --server.headless true --browser.gatherUsageStats false
+python -m streamlit run app.py --server.port 8501 --server.headless true --browser.gatherUsageStats false
