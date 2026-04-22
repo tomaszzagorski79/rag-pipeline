@@ -4,6 +4,20 @@ Edukacyjny pipeline RAG (Retrieval-Augmented Generation) z **22 zakładkami Stre
 
 Projekt powstał jako lokalne laboratorium do testowania technik RAG na polskich artykułach e-commerce (blog IdoSell).
 
+---
+
+## 🚀 Szybki start (2 ścieżki)
+
+| | 🟢 Dla nietechników | 🔵 Dla programistów |
+|---|---|---|
+| **1. Pobierz** | [⬇️ Download ZIP](https://github.com/tomaszzagorski79/rag-pipeline/archive/refs/heads/main.zip) i rozpakuj | `git clone https://github.com/tomaszzagorski79/rag-pipeline.git` |
+| **2. Uruchom** | Dwuklik `start.bat` (Win) lub `start.command` (Mac) | `./start.sh` (Linux/Mac) lub `start.bat` (Win) |
+| **3. Aktualizacje** | Pobierz nowy ZIP | `git pull` |
+
+Skrypt startowy **automatycznie** tworzy środowisko, instaluje zależności i otwiera przeglądarkę. Musisz tylko mieć zainstalowany **Python 3.12+** i uzupełnić klucze API przy pierwszym uruchomieniu (szczegóły niżej).
+
+---
+
 ## Co zawiera
 
 ### Fundament
@@ -59,44 +73,60 @@ Projekt powstał jako lokalne laboratorium do testowania technik RAG na polskich
 - `GOOGLE_API_KEY` — [Google AI Studio](https://aistudio.google.com/apikey) (tylko benchmarki Gemini)
 - `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD` — [Neo4j Aura](https://console.neo4j.io/) (tylko Graph RAG, Hybrid V+G, Context Engineering)
 
-## Instalacja
+## Instalacja i uruchomienie — jednym klikiem
 
-### Windows
+### Wymagania
+- **Python 3.12+** ([pobierz](https://www.python.org/downloads/)) — przy instalacji zaznacz **"Add Python to PATH"**
+
+### Krok 1: Pobierz projekt
+
+Wybierz **jedną** z dwóch opcji:
+
+#### Opcja A — Download ZIP (najłatwiejsze, bez Git)
+1. Kliknij zielony przycisk **Code** na górze tego repo
+2. Wybierz **Download ZIP**
+3. Rozpakuj archiwum gdziekolwiek na dysku
+
+#### Opcja B — `git clone` (dla programistów, z historią i łatwymi aktualizacjami)
 ```bash
 git clone https://github.com/tomaszzagorski79/rag-pipeline.git
 cd rag-pipeline
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-copy .env.example .env
-# Uzupełnij .env kluczami API
 ```
 
-### Mac / Linux
-```bash
-git clone https://github.com/tomaszzagorski79/rag-pipeline.git
-cd rag-pipeline
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-# Uzupełnij .env kluczami API
+Aktualizacje: w razie nowych funkcji wystarczy `git pull`.
+
+### Krok 2: Uruchom jednym klikiem
+
+| System | Jak uruchomić |
+|--------|---------------|
+| **Windows** | Podwójne kliknięcie na `start.bat` |
+| **Mac** | Podwójne kliknięcie na `start.command` (lub `./start.sh` w terminalu) |
+| **Linux** | `./start.sh` w terminalu |
+
+**Co zrobi skrypt automatycznie:**
+1. ✅ Sprawdzi czy Python jest zainstalowany
+2. ✅ Utworzy środowisko wirtualne `.venv` (pierwsze uruchomienie)
+3. ✅ Zainstaluje wszystkie zależności z `requirements.txt`
+4. ✅ Utworzy plik `.env` z szablonu `.env.example`
+5. ✅ Otworzy notatnik / edytor żebyś uzupełnił klucze API
+6. ✅ Uruchomi serwer Streamlit
+7. ✅ Otworzy `http://localhost:8501` w przeglądarce
+
+Przy kolejnych uruchomieniach — tylko aktywacja venv i start serwera (~3 sekundy).
+
+### Krok 3: Uzupełnij klucze API
+
+Przy pierwszym uruchomieniu otworzy się notatnik z plikiem `.env`. Uzupełnij minimum 3 wymagane klucze:
+```env
+QDRANT_URL=https://twoj-cluster.cloud.qdrant.io
+QDRANT_API_KEY=...
+JINA_API_KEY=...
+ANTHROPIC_API_KEY=...
 ```
 
-## Uruchomienie
+Zapisz, zamknij notatnik — aplikacja ruszy automatycznie.
 
-```bash
-# Windows
-start.bat
-
-# Mac / Linux
-./start.sh
-
-# Lub bezpośrednio
-streamlit run app.py
-```
-
-Otwórz przeglądarkę na `http://localhost:8501`.
+**Aplikacja pokaże setup wizard w zakładce "Przegląd"** jeśli jakichkolwiek kluczy brakuje.
 
 ## Workflow pipeline
 
