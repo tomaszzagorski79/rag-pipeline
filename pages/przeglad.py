@@ -12,6 +12,58 @@ def render():
     st.title("RAG Pipeline — Przegląd")
     st.markdown("Lokalne środowisko RAG z hybrid search i ewaluacją RAGAS.")
 
+    # --- Setup API (pokaż na górze jeśli brakuje kluczy) ---
+    from src.utils.api_check import check_all_apis, get_missing_required
+    import os
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env", override=True)
+
+    missing_required = get_missing_required()
+    all_statuses = check_all_apis()
+
+    if missing_required:
+        st.error(
+            f"⚠️ **Pipeline nie jest gotowy do pełnego użytku** — brakuje "
+            f"{len(missing_required)} wymaganych kluczy API: "
+            f"{', '.join(s.name for s in missing_required)}"
+        )
+
+        with st.expander("🔧 Setup wymaganych kluczy API", expanded=True):
+            st.markdown("""
+**Krok 1:** Skopiuj plik `.env.example` → `.env` w głównym katalogu projektu.
+
+**Krok 2:** Załóż konta i wygeneruj klucze API (linki poniżej).
+
+**Krok 3:** Wklej klucze do `.env` i zrestartuj aplikację.
+            """)
+
+            for status in all_statuses:
+                if status.is_required:
+                    icon = "✅" if status.is_set else "❌"
+                    st.markdown(f"### {icon} {status.name} — `{status.env_key}`")
+                    st.caption(status.description)
+                    if not status.is_set:
+                        st.markdown(f"🔗 **Załóż konto:** [{status.setup_url}]({status.setup_url})")
+                        st.markdown(f"📝 Dodaj do `.env`: `{status.env_key}=twoj_klucz`")
+                        st.markdown(f"**Bez tego klucza NIE DZIAŁAJĄ:** {', '.join(status.enables[:3])}..." if len(status.enables) > 3 else f"**Bez tego klucza NIE DZIAŁAJĄ:** {', '.join(status.enables)}")
+                        st.markdown("---")
+    else:
+        st.success("✅ Wszystkie wymagane klucze API są skonfigurowane.")
+
+    # Pokaż też opcjonalne
+    with st.expander("🔧 Opcjonalne klucze API (dla niektórych zakładek)", expanded=False):
+        for status in all_statuses:
+            if not status.is_required:
+                icon = "✅" if status.is_set else "⬜"
+                st.markdown(f"**{icon} {status.name}** — `{status.env_key}`")
+                st.caption(status.description)
+                if not status.is_set:
+                    st.markdown(f"🔗 [{status.setup_url}]({status.setup_url})")
+                    st.caption(f"Bez tego działa reszta pipeline'u, ale **nie** zadziała: {', '.join(status.enables)}")
+                st.markdown("---")
+
+    st.markdown("---")
+
     # Status pipeline'u
     st.header("Status pipeline'u")
 

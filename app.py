@@ -54,19 +54,69 @@ try:
     import os
     from dotenv import load_dotenv
     from pathlib import Path
-    load_dotenv(Path(__file__).parent / ".env")
+    load_dotenv(Path(__file__).parent / ".env", override=True)
     keys = {
-        "QDRANT_URL": bool(os.getenv("QDRANT_URL")),
-        "QDRANT_API_KEY": bool(os.getenv("QDRANT_API_KEY")),
-        "JINA_API_KEY": bool(os.getenv("JINA_API_KEY")),
-        "ANTHROPIC_API_KEY": bool(os.getenv("ANTHROPIC_API_KEY")),
-        "GOOGLE_API_KEY": bool(os.getenv("GOOGLE_API_KEY")),
+        "QDRANT_URL": (bool(os.getenv("QDRANT_URL")), True),
+        "QDRANT_API_KEY": (bool(os.getenv("QDRANT_API_KEY")), True),
+        "JINA_API_KEY": (bool(os.getenv("JINA_API_KEY")), True),
+        "ANTHROPIC_API_KEY": (bool(os.getenv("ANTHROPIC_API_KEY")), True),
+        "GOOGLE_API_KEY": (bool(os.getenv("GOOGLE_API_KEY")), False),
+        "NEO4J_URI": (bool(os.getenv("NEO4J_URI")), False),
     }
-    for name, ok in keys.items():
-        icon = "✅" if ok else "❌"
-        st.sidebar.text(f"{icon} {name}")
+    for name, (ok, required) in keys.items():
+        icon = "✅" if ok else ("❌" if required else "⬜")
+        suffix = "" if required else " (opcj.)"
+        st.sidebar.text(f"{icon} {name}{suffix}")
+
+    # Link do setup wizarda jeśli brakuje wymaganych
+    missing_req = [n for n, (ok, req) in keys.items() if req and not ok]
+    if missing_req:
+        st.sidebar.error(f"⚠️ Brakuje {len(missing_req)} wymaganych kluczy — zobacz zakładkę **Przegląd**")
 except Exception:
-    st.sidebar.error("Brak pliku .env")
+    st.sidebar.error("Brak pliku .env — skopiuj .env.example → .env")
+
+
+# --- Ostrzeżenie gdy strona wymaga klucza którego brak ---
+def _require_qdrant():
+    """Blokada stron wymagających Qdrant."""
+    import os
+    if not (os.getenv("QDRANT_URL") and os.getenv("QDRANT_API_KEY")):
+        st.error(
+            "🔒 **Ta zakładka wymaga Qdrant Cloud.** "
+            "Dodaj `QDRANT_URL` i `QDRANT_API_KEY` do `.env` "
+            "(darmowy tier: [cloud.qdrant.io](https://cloud.qdrant.io/)). "
+            "Szczegóły w zakładce **Przegląd** → Setup API."
+        )
+        st.stop()
+
+
+def _require_neo4j():
+    """Blokada stron wymagających Neo4j."""
+    import os
+    if not (os.getenv("NEO4J_URI") and os.getenv("NEO4J_PASSWORD")):
+        st.error(
+            "🔒 **Ta zakładka wymaga Neo4j Aura.** "
+            "Dodaj `NEO4J_URI`, `NEO4J_USER`, `NEO4J_PASSWORD` do `.env` "
+            "(darmowy tier: [console.neo4j.io](https://console.neo4j.io/))."
+        )
+        st.stop()
+
+
+# Mapa zakładek wymagających konkretnych kluczy
+STRONY_WYMAGAJACE_QDRANT = {
+    "2. Embeddingi tytułów", "3. Chunking & Indeksowanie", "4. Zapytania",
+    "5. Re-ranking", "6. HyDE", "7. Adaptive RAG", "8. CRAG",
+    "9. Ewaluacja RAGAS", "14. Agentic RAG", "16. Hybrid Vector+Graph",
+    "18. RAG-Fusion", "19. FLARE", "21. Speculative RAG",
+}
+STRONY_WYMAGAJACE_NEO4J = {
+    "15. Graph RAG", "16. Hybrid Vector+Graph",
+}
+
+if strona in STRONY_WYMAGAJACE_QDRANT:
+    _require_qdrant()
+if strona in STRONY_WYMAGAJACE_NEO4J:
+    _require_neo4j()
 
 
 # --- Routing stron ---

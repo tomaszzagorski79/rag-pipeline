@@ -1,11 +1,49 @@
+# Sekrety
 .env
+.env.local
+.env.*.local
+
+# Środowisko Python
 .venv/
+venv/
+env/
 __pycache__/
 *.pyc
-data/raw/
-data/results/
-data/memory/
+*.pyo
+*.pyd
 *.egg-info/
 dist/
 build/
+
+# Dane użytkownika (pozostaw .env.example, article_urls.txt, test_set.json)
+data/raw/
+data/results/
+data/memory/
+
+# Narzędzia deweloperskie
 .ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Claude Code (lokalne ustawienia)
+.claude/settings.local.json
+
+# Streamlit (lokalne cache)
+.streamlit/secrets.toml
+
+# Cache modeli ML
+fastembed_cache/
+huggingface_cache/
