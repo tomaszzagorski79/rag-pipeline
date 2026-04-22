@@ -1,4 +1,4 @@
-"""Skrypt do pobierania artykułów z bloga IdoSell przez Jina Reader.
+"""Skrypt do pobierania artykułów ze stron WWW przez Jina Reader.
 
 Użycie:
     python scripts/01_scrape_articles.py                     # pobierz wszystkie z article_urls.txt

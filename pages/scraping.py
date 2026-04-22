@@ -11,7 +11,7 @@ sys.path.insert(0, str(_root))
 
 def render():
     st.title("1. Scraping artykułów")
-    st.markdown("Pobieranie artykułów z bloga IdoSell przez Jina Reader API.")
+    st.markdown("Pobieranie artykułów ze stron WWW przez Jina Reader API.")
 
     data_dir = _root / "data"
     raw_dir = data_dir / "raw"

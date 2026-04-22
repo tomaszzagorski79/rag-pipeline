@@ -141,7 +141,7 @@ Wszystko poza `article_urls.txt` i `test_set.json` jest w `.gitignore`.
 
 ## Scraper
 
-Jina Reader (`r.jina.ai`) + post-processing: `_wyczysc_nawigacje()` wycina menu/footer IdoSell szukając pierwszego H2 i footer markers. Rate limit 3s między requestami. UI wspiera też import z sitemap.xml (max 300 URL-i, URL lub upload pliku).
+Jina Reader (`r.jina.ai`) + post-processing: `_wyczysc_nawigacje()` wycina menu/footer scrapowanej strony szukając pierwszego H2 i footer markers. Footer markers są heurystykami — dostosuj `FOOTER_MARKERS` w `jina_reader.py` pod strukturę swojej strony. Rate limit 3s między requestami. UI wspiera też import z sitemap.xml (max 300 URL-i, URL lub upload pliku).
 
 ## Dodawanie nowej metody chunkingu
 

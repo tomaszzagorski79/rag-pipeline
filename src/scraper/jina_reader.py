@@ -19,7 +19,7 @@ console = Console()
 def _wyciagnij_slug(url: str) -> str:
     """Wyciąga slug z URL-a do nazwy pliku.
 
-    Przykład: 'https://www.idosell.com/pl/blog/moj-artykul-123' -> 'moj-artykul-123'
+    Przykład: 'https://example.com/blog/moj-artykul-123' -> 'moj-artykul-123'
     """
     # Usuń trailing slash i weź ostatni segment
     sciezka = url.rstrip("/").split("/")[-1]
@@ -44,30 +44,28 @@ def _wyczysc_nawigacje(markdown: str) -> str:
             break
 
     # Znajdź koniec treści — szukaj wzorców footera
+    # UWAGA: te markery są heurystykami dla typowych blogów.
+    # Dostosuj listę pod strukturę swojej strony źródłowej.
     end = len(lines)
     footer_markers = [
+        # Ogólne sekcje "end of article"
         "## Powiązane artykuły",
         "## Podobne artykuły",
         "## Najczęściej czytane",
         "## Czytaj również",
+        "## Inne artykuły",
         "## Zapisz się",
         "## Newsletter",
+        "Zapisz się do newslettera",
+        "Wypełnij formularz",
+        "Chcesz być na bieżąco",
+        # Stopka prawna
         "Wszystkie prawa zastrzeżone",
-        "© IdoSell",
         "Polityka prywatności",
-        "### IdoSell",
         "### Dokumenty i regulaminy",
         "### Kontakt",
         "[O nas]",
         "[Kariera]",
-        "Dowiedz się więcej o IdoSell",
-        "Porozmawiaj z ekspertem",
-        "## Inne artykuły",
-        "IdoSell Newsletter",
-        "Wypełnij formularz",
-        "Zapisz się do newslettera",
-        "Chcesz być na bieżąco",
-        "Chcesz wejść na nowe rynki",
     ]
     for i in range(start + 1, len(lines)):
         stripped = lines[i].strip()

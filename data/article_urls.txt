@@ -1,8 +1,8 @@
-https://www.idosell.com/pl/blog/sprzedaz-cross-border-co-to-jest-i-jak-dziala-1235328432
-https://www.idosell.com/pl/blog/jak-sprzedawac-za-granice-krok-po-kroku-raport-cross-border-1235328261
-https://www.idosell.com/pl/blog/jak-zaczac-sprzedawac-w-cross-border-1235328623
-https://www.idosell.com/pl/blog/platnosci-cross-border-jak-wybrac-metody-platnosci-w-twoim-zagranicznym-e-sklepie-1235328178
-https://www.idosell.com/pl/blog/cross-border-w-e-commerce-jak-wybrac-rynek-z-potencjalem-1235328091
-https://www.idosell.com/pl/blog/zwroty-w-cross-border-e-commerce-kluczowe-zasady-i-wyzwania-1235328471
-https://www.idosell.com/pl/blog/cross-border-czyli-dlaczego-warto-sprzedawac-za-granica-zapraszamy-do-obejrzenia-nagrania-webinaru-1235327452
-https://www.idosell.com/pl/blog/prawo-i-podatki-w-cross-border-1235327948
+# Lista URL-i artykułów do scrapowania — jeden URL na linię
+# Linie zaczynające się od # są ignorowane.
+#
+# Dodaj swoje URL-e poniżej albo zaimportuj z sitemap.xml w zakładce "1. Scraping".
+#
+# Przykład:
+# https://example.com/blog/moj-artykul
+# https://example.com/blog/kolejny-artykul
