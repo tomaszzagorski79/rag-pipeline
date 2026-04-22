@@ -2,7 +2,7 @@
 
 Edukacyjny pipeline RAG (Retrieval-Augmented Generation) z **22 zakładkami Streamlit** pokazującymi kolejne architektury od Naive RAG do Context Engineering. Każda technika ma interaktywne demo, wizualizacje i sekcję "kiedy używać / kiedy nie".
 
-Projekt powstał jako lokalne laboratorium do testowania technik RAG na polskich artykułach e-commerce (blog IdoSell).
+Projekt powstał jako lokalne laboratorium do testowania technik RAG na polskich artykułach.
 
 ---
 
@@ -212,7 +212,7 @@ rag-pipeline/
 
 ## Edukacyjny kontekst
 
-Pipeline powstał jako towarzysz roadmapy **"Od Senior SEO Specialist do AI Search & Retrieval Consultant"** — praktyczne laboratorium do testowania hipotez o RAG w kontekście polskiego e-commerce i AI Search Optimization (GEO).
+Pipeline powstał jako praktyczne laboratorium do testowania hipotez o RAG.
 
 Każda zakładka odpowiada konkretnej architekturze RAG z literatury (Lewis 2020, HyDE 2022, ReAct 2023, Self-RAG 2023, CRAG 2024, GraphRAG 2024, RAPTOR 2024, Speculative RAG 2024, Context Engineering 2025).
 
